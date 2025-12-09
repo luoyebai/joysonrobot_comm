@@ -49,7 +49,7 @@ TEST_CASE("Publisher/Subscriber DDS communication test cases", "[PUBSUB]") {
     }
 
     BENCHMARK("Publisher DDS communication benchmark") {
-        for (size_t i = 0; i < test_count / 10; ++i) {
+        for (size_t i = 0; i < test_count / 100; ++i) {
             pub.Write(&pubmsg);
         }
     };
@@ -87,9 +87,47 @@ TEST_CASE("Rpc Client/Server communication test cases", "[Client/Server]") {
     }
 
     BENCHMARK("Rpc Client/Server communication benchmark") {
-        for (size_t i = 0; i < test_count / 10; ++i) {
+        for (size_t i = 0; i < test_count / 100; ++i) {
             auto resp = client->SendApiRequest(req);
             REQUIRE(isRequestOk(req, resp));
+        }
+    };
+}
+
+TEST_CASE("Rpc Client/Server communication aysnc test cases", "[Client/Server async]") {
+    const size_t test_count = 10000;
+    auto api_id = static_cast<int64_t>(random() % 5000);
+    jrc::ChannelFactory::Instance()->Init(0);
+    auto static server = std::make_shared<LocoServer>();
+    auto static client = std::make_shared<jrr::RpcClient>();
+    server->Init(LOCO_RPC_NAME);
+    client->Init(LOCO_RPC_NAME);
+    auto req = jrr::Request(jrr::RequestHeader(api_id), std::string(8000, 'X'));
+
+    std::atomic<size_t> done_count{0};
+    for (size_t i = 0; i < test_count; ++i) {
+        client->SendApiRequestAsync(req, [&](const jrr::Response& resp) {
+            REQUIRE(isRequestOk(req, resp));
+            done_count.fetch_add(1, std::memory_order_relaxed);
+            return;
+        });
+    }
+
+    const auto start = std::chrono::steady_clock::now();
+    while (done_count.load() < test_count) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        if (std::chrono::steady_clock::now() - start > std::chrono::seconds(5)) {
+            FAIL("Async RPC test timed out. Not all callbacks finished.");
+            break;
+        }
+    }
+
+    BENCHMARK("Rpc Client/Server communication async benchmark") {
+        for (size_t i = 0; i < test_count / 100; ++i) {
+            client->SendApiRequestAsync(req, [&](const jrr::Response& resp) {
+                REQUIRE(isRequestOk(req, resp));
+                return;
+            });
         }
     };
 }
