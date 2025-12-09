@@ -31,6 +31,7 @@ This repository contains:
     - [Communicating with ROS2](#communicating-with-ros2)
   - [Examples](#examples)
   - [License](#license)
+  - [Common Issues \& Troubleshooting](#common-issues--troubleshooting)
 
 ---
 
@@ -67,7 +68,12 @@ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make -j$(nproc)
 ```
 
-Run the tests in the build/tests directory to ensure everything works (excluding hardware-specific tests).
+Run the tests in the build/tests directory to ensure everything works.
+
+```sh
+cd build
+make test
+```
 
 Install the SDK to your system:
 
@@ -140,6 +146,8 @@ Please ensure that [ROS2](https://docs.ros.org/en/humble/Installation.html) is i
 ---
 
 ## Examples
+
+> If you need to work with dynamic types, please refer to the examples in the examples/cpp directory, including pub_json, sub_json, pub_dynamic, and sub_dynamic.  Under normal conditions, they should communicate with each other just like the standard pub and sub examples. Note that dynamic map types are not supported at the moment.
 
 Here are some basic examples (see examples/cpp for details):
 
@@ -295,3 +303,42 @@ This project uses the following third-party libraries:
 - pybind11-stubgen (MIT License)
 - catch2（Boost Software License 1.0）
 - fmt (MIT License)
+
+---
+
+## Common Issues & Troubleshooting
+
+1. cmake error
+
+```sh
+CMake Error at cmake/python.cmake:39 (message):
+  pybind11-stubgen not found
+Call Stack (most recent call first):
+  CMakeLists.txt:99 (add_python_binding)
+```
+
+Solution:
+Install pybind11-stubgen and make sure its installation directory is added to your system’s PATH environment variable.
+This tool is required for generating Python interface bindings.
+
+2. make error
+
+```sh
+Traceback (most recent call last):
+......
+......
+ImportError: xxx/third_party/lib/x86_64/libfastdds.so.3.4: undefined symbol: _ZN8eprosima7fastcdr3Cdr9serializeEt
+```
+
+To verify which libfastcdr.so.2 is being used by libfastdds.so.3.4, use the ldd command:
+
+```sh
+ldd ../third_party/lib/x86_64/libfastdds.so.3.4 | grep libfastcdr.so.2
+```
+
+If the output shows an unexpected or incorrect path, it may indicate a wrongly linked Fast CDR library. This often happens when your environment (e.g., ROS 2) provides its own libfastcdr.so.2, which can override the one bundled with your project.
+
+How to fix
+Check and clean environment variables such as LD_LIBRARY_PATH, AMENT_PREFIX_PATH, or any ROS 2 setup scripts that might affect linking.
+When building this project together with ROS 2, avoid sourcing ROS 2 during compilation.
+If you need to use ROS 2 together with this project at runtime, manually configure the CMake dynamic library paths — see examples/CMakeLists.txt for details.
