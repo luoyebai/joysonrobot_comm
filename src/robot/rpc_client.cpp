@@ -1,5 +1,4 @@
 // STD
-#include <condition_variable>
 #include <random>
 // ROBOT RPC CLIENT
 #include "robot/rpc/rpc_client.hpp"
@@ -22,34 +21,35 @@ void RpcClient::Init(const std::string& channel_name) {
     channel_subscriber_->InitChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
 
     resp_map_.reserve(1024);
-    async_map_.reserve(1024);
+    async_cb_map_.reserve(1024);
 
     return;
 }
 
 Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
+    const auto uuid = this->GenUuid();
+    auto entry = std::make_shared<SyncEntry>();
+    // lock map
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        resp_map_[uuid] = entry;
+    }
+    // send
     Response resp;
     RpcReqMsg req_msg;
-    const auto uuid = this->GenUuid();
     req_msg.header(req.GetHeader().ToJson().dump());
     req_msg.body(req.GetBody());
     req_msg.uuid(uuid);
-
-    // send request
     channel_publisher_->Write(&req_msg);
 
-    std::unique_lock<std::mutex> lock(mutex_);
-
+    // get response
+    auto future = entry->prom.get_future();
     // wait for response
-    if (auto it = resp_map_.find(uuid); it != resp_map_.end()) {
-        // Response already exists
-        resp = it->second.first;
+    if (future.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::timeout) {
+        // timeout
+        resp.SetHeader(ResponseHeader(RpcStatusCodeTimeout));
     } else {
-        resp_map_[uuid] = std::make_pair(Response(), std::make_unique<std::condition_variable>());
-        if (resp_map_[uuid].second->wait_for(lock, std::chrono::milliseconds(timeout_ms)) == std::cv_status::timeout) {
-            resp_map_[uuid].first.SetHeader(ResponseHeader(RpcStatusCodeTimeout));
-        }
-        resp = resp_map_[uuid].first;
+        resp = future.get();
     }
 
     switch (resp.GetHeader().GetStatus()) {
@@ -78,20 +78,26 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
             break;
     }
 
-    resp_map_.erase(uuid);
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        resp_map_.erase(uuid);
+    }
+
     return resp;
 }
 
 void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Response)> cb) {
     const auto uuid = GenUuid();
+    // lock map
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        async_cb_map_[uuid] = cb;
+    }
+    // send
     RpcReqMsg msg;
     msg.uuid(uuid);
     msg.header(req.GetHeader().ToJson().dump());
     msg.body(req.GetBody());
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        async_map_[uuid] = cb;
-    }
     channel_publisher_->Write(&msg);
 }
 
@@ -123,26 +129,36 @@ void RpcClient::DdsSubMsgHandler(const void* msg) {
         fmt::print(stderr, "Response header error:{}\n", e.what());
         header.SetStatus(jr::rpc::RpcStatusCodeInvalid);
     }
-
     body = resp_msg->body();
 
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (auto it = async_map_.find(uuid); it != async_map_.end()) {
-        auto cb = it->second;
-        cb(Response(header, body));
-        async_map_.erase(it);
-        lock.unlock();
+    // sync lock and set
+    std::shared_ptr<SyncEntry> entry;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = resp_map_.find(uuid);
+        if (it != resp_map_.end()) {
+            entry = it->second;
+            resp_map_.erase(it);
+        }
+    }
+    if (entry) {
+        entry->prom.set_value(Response(header, body));
         return;
     }
 
-    if (auto it = resp_map_.find(uuid); it != resp_map_.end()) {
-        it->second.first.SetHeader(header);
-        it->second.first.SetBody(body);
-        it->second.second->notify_one();
-    } else {
-        // Response before request locked
-        resp_map_[uuid] = std::make_pair(Response(header, body), std::make_unique<std::condition_variable>());
+    // async callback
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it = async_cb_map_.find(uuid);
+        if (it != async_cb_map_.end()) {
+            auto cb = it->second;
+            async_cb_map_.erase(it);
+            cb(Response(header, body));
+            return;
+        }
     }
+
+    return;
 }
 
 }  // namespace jsr::robot::rpc

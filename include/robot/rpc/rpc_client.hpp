@@ -1,7 +1,7 @@
 #pragma once
 
 // STD
-#include <condition_variable>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -36,9 +36,13 @@ class RpcClient {
    private:
     void DdsSubMsgHandler(const void* msg);
 
+    struct SyncEntry {
+        std::promise<Response> prom;
+    };
+
     std::mutex mutex_;
-    std::unordered_map<std::string, std::function<void(Response)>> async_map_;
-    std::unordered_map<std::string, std::pair<Response, std::unique_ptr<std::condition_variable>>> resp_map_;
+    std::unordered_map<std::string, std::function<void(Response)>> async_cb_map_;
+    std::unordered_map<std::string, std::shared_ptr<SyncEntry>> resp_map_;
 
     std::shared_ptr<jr::channel::ChannelPublisher<jsr::msg::RpcReqMsg>> channel_publisher_;
     std::shared_ptr<jr::channel::ChannelSubscriber<jsr::msg::RpcRespMsg>> channel_subscriber_;
