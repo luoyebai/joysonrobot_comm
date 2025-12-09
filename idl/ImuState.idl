@@ -1,0 +1,12 @@
+module jsr {
+  module msg {
+    /**
+     * @brief This is imu state idl file
+     */
+    struct ImuState {
+      float rpy[3];
+      float gyro[3];
+      float acc[3];
+    };
+  };
+};

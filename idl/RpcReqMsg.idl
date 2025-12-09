@@ -1,0 +1,13 @@
+module jsr {
+  module msg {
+    /**
+     * @brief This class represents the structure RpcReqMsg defined by the user in the IDL file.
+     */
+    struct RpcReqMsg {
+      string uuid;
+      string header;
+      string body;
+    };
+
+  };
+};

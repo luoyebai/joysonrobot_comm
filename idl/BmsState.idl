@@ -1,0 +1,16 @@
+module jsr {
+  module msg {
+    /**
+     * @brief This is bms state idl file
+     */
+    struct BmsState {
+      float voltage;
+      float current;
+      float remaining_cap;
+      float total_cap;
+      float soc;
+      uint32 cycle;
+    };
+
+  };
+};

@@ -1,0 +1,14 @@
+#include "BmsState.idl"
+#include "ImuState.idl"
+#include "MotorState.idl"
+
+module jsr {
+  module msg {
+    struct LowState {
+      BmsState bms_state;
+      ImuState imu_state;
+      sequence<MotorState> motor_state_parallel;
+      sequence<MotorState> motor_state_serial;
+    };
+  };
+};

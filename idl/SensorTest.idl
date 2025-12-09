@@ -1,0 +1,15 @@
+module test{
+
+  union SensorUnion switch (uint8) {
+    case 0: int8 temperature;
+    case 1: float voltage;
+    case 2: int32 power;
+  };
+
+
+  struct Sensor {
+    string id;
+    SensorUnion data;
+  };
+
+};

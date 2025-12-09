@@ -1,0 +1,47 @@
+module test {
+
+    enum TestEnum {
+      A,
+      B
+    };
+
+    bitset TestBitset {
+      bitfield<3> a;
+      bitfield<10> b;
+      bitfield<12, long> c;
+    };
+
+    @bit_bound(8)
+    bitmask TestBitMask {
+      @position(0) flag0,
+      @position(1) flag1,
+      @position(4) flag4,
+      @position(6) flag6,
+      flag7
+    };
+
+    union TestUnion switch(long){
+      case 1:
+        uint32 a;
+      case 2:
+        float b;
+      case 3:
+        float c[9];
+      case 4:
+        sequence<float> d;
+      case 5:
+        map<string,uint32> e;
+      case 6:
+        TestEnum f;
+      case 7:
+        TestBitset g;
+      case 8:
+        TestBitMask h;
+    };
+
+    struct Test{
+      string id;
+      TestUnion data;
+    };
+
+};

@@ -1,0 +1,14 @@
+module jsr {
+  module msg {
+    struct MotorState {
+      octet mode;
+      float q;
+      float dq;
+      float ddq;
+      float tau_est;
+      octet temperature;
+      uint32 lost;
+      uint32 reserve[2];
+    };
+  };
+};

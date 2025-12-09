@@ -1,0 +1,17 @@
+#include "MotorCmd.idl"
+
+module jsr {
+  module msg {
+
+    enum CmdType {
+      PARALLEL,
+      SERIAL
+    };
+
+    struct LowCmd {
+      CmdType cmd_type;
+      sequence<MotorCmd> motor_cmd;
+    };
+
+  };
+};

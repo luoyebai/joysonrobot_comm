@@ -1,0 +1,40 @@
+// DDS
+#include "robot/channel/channel_factory.hpp"
+
+namespace jsr::robot::channel {
+
+void ChannelFactory::Init(int32_t domain_id, const std::string& network_interface) {
+    if (initialized_) {
+        std::runtime_error("ChannelFactory has already been initialized");
+        return;
+    }
+    dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
+    dds_factory_model_->Init(domain_id, network_interface);
+    initialized_ = true;
+    return;
+}
+
+void ChannelFactory::Init(const nlohmann::json& config) {
+    if (initialized_) {
+        std::runtime_error("ChannelFactory has already been initialized");
+        return;
+    }
+
+    dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
+    dds_factory_model_->Init(config);
+}
+
+void ChannelFactory::CloseWriter(const std::string& channel_name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    dds_factory_model_->CloseWriter(channel_name);
+}
+void ChannelFactory::CloseReader(const std::string& channel_name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    dds_factory_model_->CloseReader(channel_name);
+}
+void ChannelFactory::CloseTopic(TopicPtr topic) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    dds_factory_model_->CloseTopic(topic);
+}
+
+}  // namespace jsr::robot::channel

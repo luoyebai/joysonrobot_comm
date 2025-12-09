@@ -1,0 +1,12 @@
+// RpcRespMsg.idl
+module jsr {
+  module msg {
+
+    struct RpcRespMsg {
+      string uuid;
+      string header;
+      string body;
+    };
+
+  };
+};
