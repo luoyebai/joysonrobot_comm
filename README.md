@@ -32,6 +32,7 @@ This repository contains:
   - [Examples](#examples)
   - [License](#license)
   - [Common Issues \& Troubleshooting](#common-issues--troubleshooting)
+  - [Future Plans](#future-plans)
 
 ---
 
@@ -342,3 +343,13 @@ How to fix
 Check and clean environment variables such as LD_LIBRARY_PATH, AMENT_PREFIX_PATH, or any ROS 2 setup scripts that might affect linking.
 When building this project together with ROS 2, avoid sourcing ROS 2 during compilation.
 If you need to use ROS 2 together with this project at runtime, manually configure the CMake dynamic library paths — see examples/CMakeLists.txt for details.
+
+---
+
+## Future Plans
+
+- [x] Add DDS asynchronous RPC support
+- [x] Automatically generate basic RPC code from IDL
+- [x] Add gRPC support
+- [x] Add MQTT support
+- [x] Add WebRTC support
