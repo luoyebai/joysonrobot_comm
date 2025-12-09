@@ -11,9 +11,10 @@
 namespace jrc = jsr::robot::channel;
 namespace jrr = jsr::robot::rpc;
 
-constexpr auto LOCO_SERVER_NAME = "loco";
+constexpr auto SERVER_NAME = "loco";
 
-enum class LocoApiId {
+enum class ApiId {
+    Exit = 1999,
     ChangeMode = 2000,
     Move = 2001,
     Run = 2002,
@@ -30,67 +31,71 @@ enum class LocoApiId {
     Handshake = 2015
 };
 
-class LocoServer : public jrr::RpcServer {
+class Server : public jrr::RpcServer {
    public:
-    LocoServer() = default;
-    ~LocoServer() = default;
+    Server() = default;
+    ~Server() = default;
 
    private:
     jrr::Response HandleRequest(jrr::Request& request) override {
         auto api_id = request.GetHeader().GetApiId();
         auto response = jrr::Response();
-        switch (static_cast<LocoApiId>(api_id)) {
-            case LocoApiId::ChangeMode:
+        switch (static_cast<ApiId>(api_id)) {
+            case ApiId::Exit:
+                response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
+                response.SetBody("Exit server");
+                break;
+            case ApiId::ChangeMode:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get change mode response");
                 break;
-            case LocoApiId::Move:
+            case ApiId::Move:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get move response");
                 break;
-            case LocoApiId::Run:
+            case ApiId::Run:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeServerRefused));
                 response.SetBody("Get run response");
                 break;
-            case LocoApiId::RotateHead:
+            case ApiId::RotateHead:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get rotate head response");
                 break;
-            case LocoApiId::WaveHand:
+            case ApiId::WaveHand:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get wave hand response");
                 break;
-            case LocoApiId::RotateHeadWithDirection:
+            case ApiId::RotateHeadWithDirection:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get rotate head with direction response");
                 break;
-            case LocoApiId::LieDown:
+            case ApiId::LieDown:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get lie down response");
                 break;
-            case LocoApiId::GetUp:
+            case ApiId::GetUp:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get get up response");
                 break;
-            case LocoApiId::MoveHandEndEffector:
+            case ApiId::MoveHandEndEffector:
                 break;
-            case LocoApiId::ControlGripper:
+            case ApiId::ControlGripper:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get control gripper response");
                 break;
-            case LocoApiId::GetFrameTransform:
+            case ApiId::GetFrameTransform:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get frame transform response");
                 break;
-            case LocoApiId::SwitchHandEndEffectorControlMode:
+            case ApiId::SwitchHandEndEffectorControlMode:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get switch hand end effector control mode response");
                 break;
-            case LocoApiId::ControlDexterousHand:
+            case ApiId::ControlDexterousHand:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get control dexterous hand response");
                 break;
-            case LocoApiId::Handshake:
+            case ApiId::Handshake:
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeSuccess));
                 response.SetBody("Get handshake response");
                 break;
@@ -98,16 +103,18 @@ class LocoServer : public jrr::RpcServer {
                 response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeInvalid));
                 response.SetBody("Get unknown request");
         }
-        // response.SetBody(request.GetBody());
         fmt::print("[Server]| Get Request with api id={},body={}\n", api_id, response.GetBody());
+        if (api_id == 1999) {
+            _Exit(0);
+        }
         return response;
     }
 };
 
 int main() {
     jrc::ChannelFactory::Instance()->Init(0);
-    auto server = std::make_shared<LocoServer>();
-    server->Init(LOCO_SERVER_NAME);
+    auto server = std::make_shared<Server>();
+    server->Init(SERVER_NAME);
     // The server will run for 100 seconds
     for (size_t i = 0; i < 100; ++i) {
         std::this_thread::sleep_for(std::chrono::seconds(1));

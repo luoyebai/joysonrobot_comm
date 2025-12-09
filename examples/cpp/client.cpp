@@ -6,26 +6,33 @@
 // RPC CLIENT
 #include "robot/rpc/rpc_client.hpp"
 
-constexpr auto LOCO_SERVER_NAME = "loco";
+constexpr auto SERVER_NAME = "loco";
 
 namespace jrc = jsr::robot::channel;
 
 int main() {
     jrc::ChannelFactory::Instance()->Init(0);
     auto client = std::make_shared<jsr::robot::rpc::RpcClient>();
-    client->Init(LOCO_SERVER_NAME);
+    client->Init(SERVER_NAME);
     size_t frame_count = 0;
     auto last_time = std::chrono::steady_clock::now();
-    int api = 0;
     jsr::robot::rpc::Request req;
     jsr::robot::rpc::RequestHeader header;
-    while (true) {
-        fmt::print("\nEnter API number: ");
-        std::cin >> api;
+
+    for (size_t i = 0; i < 5000; ++i) {
+        auto api = random() % 16 + 2000;
         header.SetApiId(api);
         req.SetHeader(header);
         req.SetBody("This is a message");
-        client->SendApiRequest(req);
+
+        //     auto resp = client->SendApiRequest(req);
+        //     fmt::print("Response: {}\n", resp.GetBody());
+        client->SendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {
+            fmt::print("Async Response: {}\n", resp.GetBody());
+            return;
+        });
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+
         frame_count++;
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - last_time).count();
@@ -36,4 +43,10 @@ int main() {
             last_time = now;
         }
     }
+    // Exit
+    auto api = 1999;
+    header.SetApiId(api);
+    req.SetHeader(header);
+    req.SetBody("Exit");
+    client->SendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {});
 }
