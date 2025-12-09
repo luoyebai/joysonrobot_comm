@@ -6,16 +6,16 @@ This is the SDK developed and used by Joyson Robot, designed to provide develope
 
 This repository contains:
 
-1. The SDK implementation [header files](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/include) and [source files](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/src).
+1. The SDK implementation [header files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/include) and [source files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/src).
 
-2. The [IDL files](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/idl) used by the SDK and the [scripts](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/third_party/scripts/ddsgen) to generate code from them.
+2. The [IDL files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/idl) used by the SDK and the [scripts](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/third_party/scripts/ddsgen) to generate code from them.
 
-3. The [test code](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/tests) for this SDK.
+3. The [test code](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/tests) for this SDK.
 
 
-4. The [Python interface implementation](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/python) for this SDK.
+4. The [Python interface implementation](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/python) for this SDK.
 
-> [Chinese version Readme](http://192.168.124.192:3000/TanJiachun/joysonrobot_sdk_v2/src/branch/main/README.zh-CN.md)
+> [Chinese version Readme](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/README.zh-CN.md)
 
 ---
 
@@ -105,7 +105,7 @@ Then jsrsdk can be used. The Python interface must be written in python/binding.
 
 ### Code Generator
 
-To use the generator, first read about [writing IDL files](https://fast-dds.docs.eprosima.com/en/2.6.x/fastddsgen/dataTypes/dataTypes.html). Place your `.idl` files in the `idl/` directory of this project, and run the following commands:
+To use the generator, first read about [writing IDL files](https://fast-dds.docs.eprosima.com/en/3.4.x/fastddsgen/dataTypes/dataTypes.html). Place your `.idl` files in the `idl/` directory of this project, and run the following commands:
 
 ```sh
 sudo apt-get install openjdk17-jdk
