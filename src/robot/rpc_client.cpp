@@ -20,6 +20,10 @@ void RpcClient::Init(const std::string& channel_name) {
     channel_publisher_->InitChannel();
     channel_subscriber_ = std::make_shared<jr::channel::ChannelSubscriber<RpcRespMsg>>(channel_name + "/response");
     channel_subscriber_->InitChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
+
+    resp_map_.reserve(1024);
+    async_map_.reserve(1024);
+
     return;
 }
 
@@ -37,7 +41,6 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
     std::unique_lock<std::mutex> lock(mutex_);
 
     // wait for response
-
     if (auto it = resp_map_.find(uuid); it != resp_map_.end()) {
         // Response already exists
         resp = it->second.first;
@@ -79,6 +82,19 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
     return resp;
 }
 
+void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Response)> cb) {
+    const auto uuid = GenUuid();
+    RpcReqMsg msg;
+    msg.uuid(uuid);
+    msg.header(req.GetHeader().ToJson().dump());
+    msg.body(req.GetBody());
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        async_map_[uuid] = cb;
+    }
+    channel_publisher_->Write(&msg);
+}
+
 void RpcClient::Stop() {
     channel_publisher_->CloseChannel();
     channel_subscriber_->CloseChannel();
@@ -111,8 +127,15 @@ void RpcClient::DdsSubMsgHandler(const void* msg) {
     body = resp_msg->body();
 
     std::unique_lock<std::mutex> lock(mutex_);
-    auto it = resp_map_.find(uuid);
-    if (it != resp_map_.end()) {
+    if (auto it = async_map_.find(uuid); it != async_map_.end()) {
+        auto cb = it->second;
+        cb(Response(header, body));
+        async_map_.erase(it);
+        lock.unlock();
+        return;
+    }
+
+    if (auto it = resp_map_.find(uuid); it != resp_map_.end()) {
         it->second.first.SetHeader(header);
         it->second.first.SetBody(body);
         it->second.second->notify_one();
