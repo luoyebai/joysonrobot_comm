@@ -25,8 +25,9 @@ int main() {
         req.SetHeader(header);
         req.SetBody("This is a message");
 
-        //     auto resp = client->SendApiRequest(req);
-        //     fmt::print("Response: {}\n", resp.GetBody());
+        // sync send and async send
+        auto resp = client->SendApiRequest(req);
+        fmt::print("Response: {}\n", resp.GetBody());
         client->SendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {
             fmt::print("Async Response: {}\n", resp.GetBody());
             return;
