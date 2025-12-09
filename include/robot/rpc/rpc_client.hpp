@@ -27,6 +27,7 @@ class RpcClient {
 
     void Init(const std::string& channel_name);
     Response SendApiRequest(const Request& req, int64_t timeout_ms = 1000);
+    void SendApiRequestAsync(const Request& req, std::function<void(Response)> cb);
 
     void Stop();
 
@@ -36,6 +37,7 @@ class RpcClient {
     void DdsSubMsgHandler(const void* msg);
 
     std::mutex mutex_;
+    std::unordered_map<std::string, std::function<void(Response)>> async_map_;
     std::unordered_map<std::string, std::pair<Response, std::unique_ptr<std::condition_variable>>> resp_map_;
 
     std::shared_ptr<jr::channel::ChannelPublisher<jsr::msg::RpcReqMsg>> channel_publisher_;
