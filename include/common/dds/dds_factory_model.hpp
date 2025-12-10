@@ -33,7 +33,11 @@ namespace jsr::common::dds {
 class DdsFactoryModel {
    public:
     DdsFactoryModel();
-    ~DdsFactoryModel();
+    DdsFactoryModel(const DdsFactoryModel&) = default;
+    DdsFactoryModel(DdsFactoryModel&&) = default;
+    DdsFactoryModel& operator=(const DdsFactoryModel&) = default;
+    DdsFactoryModel& operator=(DdsFactoryModel&&) = default;
+    ~DdsFactoryModel() = default;
 
     /**
      * @brief Initialize DDS factory model, create participant, publisher and subscriber, register type support and create topic.
@@ -51,14 +55,14 @@ class DdsFactoryModel {
     void Init(const nlohmann::json& config);
 
     void CloseWriter(const std::string& channel_name) {
-        publisher_->delete_datawriter(publisher_->lookup_datawriter(channel_name.c_str()));
+        publisher_->delete_datawriter(publisher_->lookup_datawriter(channel_name));
     }
 
     void CloseReader(const std::string& channel_name) {
-        subscriber_->delete_datareader(subscriber_->lookup_datareader(channel_name.c_str()));
+        subscriber_->delete_datareader(subscriber_->lookup_datareader(channel_name));
     }
 
-    void CloseTopic(DdsTopicPtr topic) { participant_->delete_topic(topic.get()); }
+    void CloseTopic(const DdsTopicPtr& topic) { participant_->delete_topic(topic.get()); }
 
     DdsTopicPtr GetTopic(const std::string& topic_name) {
         auto it = topic_map_.find(topic_name);
@@ -97,7 +101,7 @@ class DdsFactoryModel {
     // dynamic
     template <typename MSG, typename = is_dynamic_data_t<MSG>>
     DdsTopicChannelPtr<MSG> CreateTopicChannel(const std::string& topic_name,
-                                               DdsDynamicTypeBuilder::_ref_type type_builder) {
+                                               const DdsDynamicTypeBuilder::_ref_type& type_builder) {
         DdsTypeSupport type_support(new DdsDynamicPubSubType(type_builder->build()));
         DdsTopicChannelPtr<MSG> topic_channel = std::make_shared<DdsTopicChannel<MSG>>();
         if (participant_ == nullptr) {

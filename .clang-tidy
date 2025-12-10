@@ -1,82 +1,111 @@
 FormatStyle: file
 
-Checks: |
-  *bugprone*,
-  *performance*,
-  clang-analyzer-optin.cplusplus.VirtualCall,
-  clang-analyzer-optin.performance.Padding,
-  cppcoreguidelines-init-variables,
-  cppcoreguidelines-prefer-member-initializer,
-  cppcoreguidelines-pro-type-static-cast-downcast,
-  cppcoreguidelines-slicing,
-  google-explicit-constructor,
-  llvm-namespace-comment,
-  misc-definitions-in-headers,
-  misc-misplaced-const,
-  misc-non-copyable-objects,
-  misc-static-assert,
-  misc-throw-by-value-catch-by-reference,
-  misc-uniqueptr-reset-release,
-  misc-unused-parameters,
-  modernize-avoid-bind,
-  modernize-loop-convert,
-  modernize-make-shared,
-  modernize-redundant-void-arg,
-  modernize-replace-auto-ptr,
-  modernize-replace-disallow-copy-and-assign-macro,
-  modernize-replace-random-shuffle,
-  modernize-shrink-to-fit,
-  modernize-use-auto,
-  modernize-use-bool-literals,
-  modernize-use-default-member-init,
-  modernize-use-emplace,
-  modernize-use-equals-default,
-  modernize-use-equals-delete,
-  modernize-use-noexcept,
-  modernize-use-nullptr,
-  modernize-use-override,
-  modernize-use-using,
-  readability-avoid-const-params-in-decls,
-  readability-braces-around-statements,
-  readability-const-return-type,
-  readability-container-size-empty,
-  readability-delete-null-pointer,
-  readability-else-after-return,
-  readability-implicit-bool-conversion,
-  readability-inconsistent-declaration-parameter-name,
-  readability-make-member-function-const,
-  readability-misplaced-array-index,
-  readability-non-const-parameter,
-  readability-qualified-auto,
-  readability-redundant-function-ptr-dereference,
-  readability-redundant-smartptr-get,
-  readability-redundant-string-cstr,
-  readability-simplify-subscript-expr,
-  readability-static-accessed-through-instance,
-  readability-static-definition-in-anonymous-namespace,
-  readability-string-compare,
-  readability-suspicious-call-argument,
-  readability-uniqueptr-delete-release,
-  -bugprone-chained-comparison,
+Checks: "*,
+  -llvm-*,
+  -llvmlibc-*,
+  -altera-*,
+  -android-*,
+  -boost-*,
+  -darwin-*,
+  -fuchsia-*,
+  -linuxkernel-*,
+  -objc-*,
+  -portability-*,
+  -zircon-*,
+  -clang-analyzer-osx*,
+  -clang-analyzer-optin.cplusplus.UninitializedObject,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  -clang-analyzer-core.NullDereference,
+  -clang-analyzer-cplusplus.NewDelete,
+  -clang-analyzer-cplusplus.PlacementNew,
+  -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -clang-analyzer-cplusplus.Move,
+  -clang-diagnostic-unused-parameter,
+  -cppcoreguidelines-*,
+  cppcoreguidelines-explicit-virtual-functions,
+  cppcoreguidelines-special-member-functions,
+  -cert-err58-cpp,
+  -cert-env33-c,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+  -google-runtime-int,
+  -google-readability-casting,
+  -google-readability-function-size,
+  -google-readability-todo,
+  -google-readability-braces-around-statements,
+  -google-build-using-namespace,
+  -readability-magic-numbers,
+  -readability-redundant-access-specifiers,
+  -readability-implicit-bool-conversion,
+  -readability-function-cognitive-complexity,
+  -readability-isolate-declaration,
+  -readability-convert-member-functions-to-static,
+  -readability-container-size-empty,
+  -readability-function-size,
+  -readability-qualified-auto,
+  -readability-make-member-function-const,
+  -readability-redundant-control-flow,
+  -readability-named-parameter,
+  -readability-identifier-length,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -modernize-use-nullptr,
+  -modernize-replace-disallow-copy-and-assign-macro,
+  -modernize-use-bool-literals,
+  -modernize-use-equals-default,
+  -modernize-use-default-member-init,
+  -modernize-use-auto,
+  -modernize-loop-convert,
+  -modernize-deprecated-headers,
+  -modernize-raw-string-literal,
+  -modernize-use-nodiscard,
+  -misc-unused-using-decls,
+  -misc-no-recursion,
+  -misc-unused-parameters,
+  -misc-redundant-expression,
+  -misc-non-private-member-variables-in-classes,
+  -hicpp-*,
+  hicpp-exception-baseclass,
+  -performance-no-int-to-ptr,
   -bugprone-easily-swappable-parameters,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-integer-division,
   -bugprone-exception-escape,
   -bugprone-reserved-identifier,
-  -bugprone-unused-raii,
-  -performance-enum-size,
-  -performance-inefficient-string-concatenation,
+  -bugprone-branch-clone,
+  -bugprone-narrowing-conversions"
 
 CheckOptions:
-- key:             modernize-use-equals-default.IgnoreMacros
-  value:           false
-- key:             performance-for-range-copy.WarnOnAllAutoCopies
-  value:           true
-- key:             performance-inefficient-string-concatenation.StrictMode
-  value:           true
-- key:             performance-unnecessary-value-param.AllowedTypes
-  value:           'exception_ptr$;'
-- key:             readability-implicit-bool-conversion.AllowPointerConditions
-  value:           true
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.StaticConstantCase
+    value: aNy_CasE
+  - key: readability-identifier-naming.ConstexprVariableCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: _
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: CamelCase
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: 2
+  - key: readability-uppercase-literal-suffix.NewSuffixes
+    value: "f;u;ul"
+  # Ignore GoogleTest function macros.
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: "(TEST|TEST_F|TEST_P|INSTANTIATE_TEST_SUITE_P|MOCK_METHOD|TYPED_TEST)"
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: 0
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: 1
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value: 1
+  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value: 1
 
-HeaderFilterRegex: '^include/.*\.hpp$'
-
-
+HeaderFilterRegex: "^(src/|include/).*"

@@ -4,7 +4,7 @@
 #include <string>
 #include <thread>
 // IDL
-#include "idl/SenSorTest.hpp"
+#include "idl/SensorTest.hpp"
 // SUB
 #include "robot/channel/channel_subscriber.hpp"
 

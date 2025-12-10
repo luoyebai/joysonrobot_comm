@@ -36,7 +36,7 @@ class ChannelFactory {
 
     void CloseWriter(const std::string& channel_name);
     void CloseReader(const std::string& channel_name);
-    void CloseTopic(TopicPtr topic);
+    void CloseTopic(const TopicPtr& topic);
 
     template <typename MSG, typename = jsr::common::dds::not_dynamic_data_t<MSG>>
     ChannelPtr<MSG> CreateSendChannel(const std::string& name) {
@@ -62,7 +62,7 @@ class ChannelFactory {
 
     // dynamic
     ChannelPtr<jsr::common::dds::DdsDynamicData> CreateSendChannel(
-        const std::string& name, jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder) {
+        const std::string& name, const jsr::common::dds::DdsDynamicTypeBuilder::_ref_type& type_builder) {
         if (!initialized_) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::Instance()->Init before use!");
@@ -73,8 +73,8 @@ class ChannelFactory {
     }
 
     ChannelPtr<jsr::common::dds::DdsDynamicData> CreateRecvChannel(
-        const std::string& name, jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder,
-        std::function<void(const void*)> handler) {
+        const std::string& name, const jsr::common::dds::DdsDynamicTypeBuilder::_ref_type& type_builder,
+        const std::function<void(const void*)>& handler) {
         if (!initialized_) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::Instance()->Init before use!");

@@ -19,15 +19,14 @@ template <typename MSG>
 class ChannelPublisher {
    public:
     template <typename T = MSG, typename = jsr::common::dds::not_dynamic_data_t<T>>
-    explicit ChannelPublisher(const std::string& channel_name) : channel_name_(channel_name) {}
+    explicit ChannelPublisher(std::string channel_name) : channel_name_(std::move(channel_name)) {}
 
     template <typename T = MSG, typename = jsr::common::dds::is_dynamic_data_t<T>>
-    explicit ChannelPublisher(const std::string& channel_name,
-                              jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder)
-        : channel_name_(channel_name), type_builder_(type_builder) {}
+    explicit ChannelPublisher(std::string channel_name, jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder)
+        : channel_name_(std::move(channel_name)), type_builder_(std::move(type_builder)) {}
 
     void InitChannel() {
-        if constexpr (jsr::common::dds::is_dynamic_data_v<MSG>) {
+        if constexpr (jsr::common::dds::IS_DYNAMIC_DATA_V<MSG>) {
             assert(type_builder_ != nullptr && "ChannelPublisher::InitChannel(): type builder is null");
             channel_ptr_ = ChannelFactory::Instance()->CreateSendChannel(channel_name_, type_builder_);
         } else {

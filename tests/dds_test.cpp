@@ -26,7 +26,7 @@ using namespace jsr::msg;
 TEST_CASE("Publisher/Subscriber DDS communication test cases", "[PUBSUB]") {
     const size_t test_count = 10000;
     auto g_f = [&]() {
-        static std::mt19937 rng(123);
+        static std::mt19937 rng(std::random_device{}());
         static std::uniform_real_distribution<double> dist(0.0, 1.0);
         return static_cast<float>(dist(rng));
     };

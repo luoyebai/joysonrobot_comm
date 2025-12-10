@@ -25,8 +25,6 @@ DdsFactoryModel::DdsFactoryModel()
     return;
 }
 
-DdsFactoryModel::~DdsFactoryModel() = default;
-
 void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interface) {
     if (!network_interface.empty()) {
         // Create a descriptor for the new transport.
@@ -65,7 +63,7 @@ void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interfa
 
 void DdsFactoryModel::Init(const nlohmann::json& config) {
     if (config.empty()) {
-        std::runtime_error("DdsFactoryModel config is empty");
+        throw std::runtime_error("DdsFactoryModel config is empty");
         return;
     }
     int32_t domain_id = config.value("domain_id", 0);

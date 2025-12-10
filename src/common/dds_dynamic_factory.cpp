@@ -17,13 +17,13 @@ TypeBuilderRef DdsDynamicFactory::CreateStructType(const std::string& name, Type
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
     desc->kind(TK_STRUCTURE);
     desc->name(name);
-    desc->base_type(base_type);
+    desc->base_type(std::move(base_type));
 
     return DdsDynamicTypeBuilderFactory::get_instance()->create_type(desc);
 }
 
-void DdsDynamicFactory::AddPrimitiveMember(TypeBuilderRef builder, const std::string& name, fdds::dds::TypeKind tk,
-                                           uint32_t id) {
+void DdsDynamicFactory::AddPrimitiveMember(const TypeBuilderRef& builder, const std::string& name,
+                                           fdds::dds::TypeKind tk, uint32_t id) {
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
     if (id != 0) {
@@ -34,7 +34,7 @@ void DdsDynamicFactory::AddPrimitiveMember(TypeBuilderRef builder, const std::st
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddSequenceMember(TypeBuilderRef builder, const std::string& name,
+void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const std::string& name,
                                           fdds::dds::TypeKind elem_kind, uint32_t bound, uint32_t id) {
     auto elem_type = DdsDynamicTypeBuilderFactory::get_instance()->get_primitive_type(elem_kind);
     auto seq_type = DdsDynamicTypeBuilderFactory::get_instance()->create_sequence_type(elem_type, bound)->build();
@@ -47,9 +47,10 @@ void DdsDynamicFactory::AddSequenceMember(TypeBuilderRef builder, const std::str
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddSequenceMember(TypeBuilderRef builder, const std::string& name, TypeRef elem_type,
+void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
                                           uint32_t bound, uint32_t id) {
-    auto seq_type = DdsDynamicTypeBuilderFactory::get_instance()->create_sequence_type(elem_type, bound)->build();
+    auto seq_type =
+        DdsDynamicTypeBuilderFactory::get_instance()->create_sequence_type(std::move(elem_type), bound)->build();
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
     if (id != 0) {
@@ -59,8 +60,8 @@ void DdsDynamicFactory::AddSequenceMember(TypeBuilderRef builder, const std::str
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddArrayMember(TypeBuilderRef builder, const std::string& name, fdds::dds::TypeKind elem_kind,
-                                       const std::vector<uint32_t>& dims, uint32_t id) {
+void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std::string& name,
+                                       fdds::dds::TypeKind elem_kind, const std::vector<uint32_t>& dims, uint32_t id) {
     auto elem_type = DdsDynamicTypeBuilderFactory::get_instance()->get_primitive_type(elem_kind);
     auto arr_type = DdsDynamicTypeBuilderFactory::get_instance()->create_array_type(elem_type, dims)->build();
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
@@ -72,9 +73,10 @@ void DdsDynamicFactory::AddArrayMember(TypeBuilderRef builder, const std::string
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddArrayMember(TypeBuilderRef builder, const std::string& name, TypeRef elem_type,
+void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
                                        const std::vector<uint32_t>& dims, uint32_t id) {
-    auto arr_type = DdsDynamicTypeBuilderFactory::get_instance()->create_array_type(elem_type, dims)->build();
+    auto arr_type =
+        DdsDynamicTypeBuilderFactory::get_instance()->create_array_type(std::move(elem_type), dims)->build();
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
     if (id != 0) {
@@ -84,19 +86,20 @@ void DdsDynamicFactory::AddArrayMember(TypeBuilderRef builder, const std::string
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddCustomMember(TypeBuilderRef builder, const std::string& name, TypeRef type, uint32_t id) {
+void DdsDynamicFactory::AddCustomMember(const TypeBuilderRef& builder, const std::string& name, TypeRef type,
+                                        uint32_t id) {
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
     if (id != 0) {
         m->id(id);
     }
-    m->type(type);
+    m->type(std::move(type));
 
     builder->add_member(m);
 }
 
 DataRef DdsDynamicFactory::CreateData(TypeRef type) {
-    return DdsDynamicDataFactory::get_instance()->create_data(type);
+    return DdsDynamicDataFactory::get_instance()->create_data(std::move(type));
 }
 
 TypeBuilderRef DdsDynamicFactory::ParserTypeFromIdl(const std::string& idl_path, const std::string& type_name,
@@ -135,12 +138,13 @@ std::string DdsDynamicFactory::ToRos2TypeName(const std::string& dds_name) {
     }
     std::string ns = dds_name.substr(0, pos);     // namespace
     std::string type = dds_name.substr(pos + 2);  // type name
-    if (ns.size() >= 5 && ns.compare(ns.size() - 5, 5, "dds_") == 0)
+    if (ns.size() >= 5 && ns.compare(ns.size() - 5, 5, "dds_") == 0) {
         return dds_name;
+    }
     return ns + "::dds_::" + type + "_";
 }
 
-TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(TypeRef type) {
+TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
     auto factory = DdsDynamicTypeBuilderFactory::get_instance();
 
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
@@ -222,17 +226,17 @@ TypeBuilderRef DdsDynamicFactory::ParserTypeFromIdlWithRos2(const std::string& i
     return CloneTypeWithRos2(type_builder->build());
 }
 
-void DdsDynamicFactory::PrintTypeInfo(TypeRef type, const std::string& mem_name, size_t indent, int32_t id) {
+void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& mem_name, size_t indent, uint32_t id) {
     auto indent_print = [indent] {
         for (size_t i = 0; i < indent; ++i) {
             fmt::print("\t");
         }
     };
     indent_print();
-    if (id != -1) {
-        fmt::print("[{}]{}->{}[", id, mem_name.c_str(), type->get_name().c_str());
-    } else {
+    if (id == UINT32_MAX) {
         fmt::print("[*]{}->{}[", mem_name.c_str(), type->get_name().c_str());
+    } else {
+        fmt::print("[{}]{}->{}[", id, mem_name.c_str(), type->get_name().c_str());
     }
 
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
@@ -274,7 +278,7 @@ void DdsDynamicFactory::PrintTypeInfo(TypeRef type, const std::string& mem_name,
             std::map<fdds::dds::ObjectName, TypeMemberRef> members;
             type->get_all_members_by_name(members);
             fmt::print("({})\n", members.size());
-            size_t count = 0;
+            int32_t count = 0;
             for (auto& [name, mem] : members) {
                 indent_print();
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
@@ -294,7 +298,7 @@ void DdsDynamicFactory::PrintTypeInfo(TypeRef type, const std::string& mem_name,
             indent_print();
             fmt::print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
             auto mcount = type->get_member_count();
-            for (decltype(mcount) id = 0; id < mcount; id++) {
+            for (uint32_t id = 0; id < mcount; id++) {
                 TypeMemberRef mem;
                 type->get_member(mem, id);
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
@@ -309,7 +313,7 @@ void DdsDynamicFactory::PrintTypeInfo(TypeRef type, const std::string& mem_name,
             fmt::print("UNION]\n");
             indent_print();
             fmt::print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-            uint32_t mcount = type->get_member_count();
+            auto mcount = type->get_member_count();
             for (uint32_t id = 0; id < mcount; id++) {
                 TypeMemberRef mem;
                 type->get_member(mem, id);
@@ -346,19 +350,19 @@ void DdsDynamicFactory::PrintTypeInfo(TypeRef type, const std::string& mem_name,
     }
 }
 
-std::string DdsDynamicFactory::IdlSerialize(TypeRef type) {
+std::string DdsDynamicFactory::IdlSerialize(const TypeRef& type) {
     std::stringstream ss;
     fdds::dds::idl_serialize(type, ss);
     return ss.str();
 }
 
-DataRef DdsDynamicFactory::ParseFromJson(const nlohmann::json& data_json, TypeRef type) {
+DataRef DdsDynamicFactory::ParseFromJson(const nlohmann::json& data_json, const TypeRef& type) {
     DataRef data;
     fdds::dds::json_deserialize(data_json.dump(), type, fdds::dds::DynamicDataJsonFormat::EPROSIMA, data);
     return data;
 }
 
-nlohmann::json DdsDynamicFactory::ToJson(DataRef data) {
+nlohmann::json DdsDynamicFactory::ToJson(const DataRef& data) {
     std::stringstream json_ss;
     fdds::dds::json_serialize(data, fdds::dds::DynamicDataJsonFormat::EPROSIMA, json_ss);
     nlohmann::json data_json = nlohmann::json::parse(json_ss.str());

@@ -137,7 +137,7 @@ using not_dynamic_data_t = std::enable_if_t<!std::is_same_v<T, DdsDynamicData>>;
 template <typename T>
 using is_dynamic_data_t = std::enable_if_t<std::is_same_v<T, DdsDynamicData>>;
 template <typename T>
-inline constexpr bool is_dynamic_data_v = std::is_same_v<T, DdsDynamicData>;
+inline constexpr bool IS_DYNAMIC_DATA_V = std::is_same_v<T, DdsDynamicData>;
 
 /**
  * @brief DDS entity listener
@@ -165,7 +165,7 @@ class DdsReaderListener : public fdds::dds::DataReaderListener {
     }
 
     void SetDynamicTypeBuilder(DdsDynamicTypeBuilder::_ref_type type_builder) {
-        type_builder_ = type_builder;
+        type_builder_ = std::move(type_builder);
         return;
     }
 
@@ -175,7 +175,7 @@ class DdsReaderListener : public fdds::dds::DataReaderListener {
      * @param reader reader
      */
     void on_data_available(DdsReader* reader) override {
-        if constexpr (is_dynamic_data_v<MSG>) {
+        if constexpr (IS_DYNAMIC_DATA_V<MSG>) {
             assert(type_builder_ != nullptr && "DdsReaderListener::on_data_available(): type builder is null");
             typename MSG::_ref_type st = DdsDynamicDataFactory::get_instance()->create_data(type_builder_->build());
             DdsSampleInfo info;

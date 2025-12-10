@@ -11,10 +11,10 @@ class Request {
    public:
     Request() = default;
     Request(const RequestHeader& header, const std::string& body) : header_(header), body_(body) {}
-    Request(RequestHeader&& header, std::string&& body) : header_(std::move(header)), body_(std::move(body)) {}
+    Request(RequestHeader&& header, std::string&& body) : header_(header), body_(body) {}
 
     void SetHeader(const RequestHeader& header) { header_ = header; }
-    void SetHeader(RequestHeader&& header) { header_ = std::move(header); }
+    void SetHeader(RequestHeader&& header) { header_ = header; }
 
     RequestHeader GetHeader() const { return header_; }
 

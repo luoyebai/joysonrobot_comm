@@ -21,8 +21,8 @@ void SubHandle(const void* msg) {
     auto imu_state = data->loan_value(data->get_member_id_by_name("imu_state"));
     auto motor_state_parallel = data->loan_value(data->get_member_id_by_name("motor_state_parallel"));
     auto motor_state_serial = data->loan_value(data->get_member_id_by_name("motor_state_serial"));
-    float voltage, current, remaining_cap, total_cap, soc;
-    uint32_t cycle;
+    float voltage{}, current{}, remaining_cap{}, total_cap{}, soc{};
+    uint32_t cycle = 0;
     bms_state->get_float32_value(voltage, bms_state->get_member_id_by_name("voltage"));
     bms_state->get_float32_value(current, bms_state->get_member_id_by_name("current"));
     bms_state->get_float32_value(remaining_cap, bms_state->get_member_id_by_name("remaining_cap"));
@@ -48,9 +48,9 @@ void SubHandle(const void* msg) {
         fmt::print("{}:\n\t", name);
         for (size_t i = 0; i < 23; ++i) {
             auto motor_data = motor_seq->loan_value(i);
-            uint8_t mode, temp;
-            float q, dq, ddq, tau_est;
-            uint32_t lost;
+            uint8_t mode{}, temp{};
+            float q{}, dq{}, ddq{}, tau_est{};
+            uint32_t lost{};
             std::vector<uint32_t> reserve;
             motor_data->get_uint8_value(mode, motor_data->get_member_id_by_name("mode"));
             motor_data->get_float32_value(q, motor_data->get_member_id_by_name("q"));

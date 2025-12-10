@@ -36,9 +36,9 @@ TEST_CASE("Publisher/Subscriber Dynamic pub&sub DDS communication using dynamic 
             auto data = *static_cast<const DdsDynamicData::_ref_type*>(msg);
             DdsDynamicData::_ref_type m1_loan_data = data->loan_value(data->get_member_id_by_name("member1"));
             DdsDynamicData::_ref_type m2_loan_data = data->loan_value(data->get_member_id_by_name("member2"));
-            int32_t m1_first, m1_second;
-            float m2_first;
-            int64_t m2_second;
+            int32_t m1_first = 0, m1_second = 0;
+            float m2_first = 0.0f;
+            int64_t m2_second = 0;
             DdsDynamicData::_ref_type m2_seq;
             m1_loan_data->get_int32_value(m1_first, m1_loan_data->get_member_id_by_name("first"));
             m1_loan_data->get_int32_value(m1_second, m1_loan_data->get_member_id_by_name("second"));
@@ -50,7 +50,7 @@ TEST_CASE("Publisher/Subscriber Dynamic pub&sub DDS communication using dynamic 
             data->return_loaned_value(m2_loan_data);
 
             for (size_t i = 0; i < 100; ++i) {
-                int32_t first, second;
+                int32_t first = 0, second = 0;
                 DdsDynamicData::_ref_type m2_seq_data = m2_seq->loan_value(i);
                 m2_seq_data->get_int32_value(first, m1_loan_data->get_member_id_by_name("first"));
                 m2_seq_data->get_int32_value(second, m1_loan_data->get_member_id_by_name("second"));
@@ -84,8 +84,8 @@ TEST_CASE("Publisher/Subscriber Dynamic pub&sub DDS communication using dynamic 
             member2_data->set_int64_value(member2_data->get_member_id_by_name("second"), 0xFFFFF);
 
             DdsDynamicData::_ref_type m2_seq = member2_data->loan_value(member2_data->get_member_id_by_name("seq"));
-            for (size_t j = 0; j < 100; ++j) {
-                DdsDynamicData::_ref_type seq_data = member1_data;
+            for (int32_t j = 0; j < 100; ++j) {
+                const DdsDynamicData::_ref_type& seq_data = member1_data;
                 seq_data->set_int32_value(seq_data->get_member_id_by_name("first"), 12315 + j * 10);
                 seq_data->set_int32_value(seq_data->get_member_id_by_name("second"), 12306 + j * 10);
                 m2_seq->set_complex_value(j, seq_data);
@@ -102,10 +102,10 @@ TEST_CASE("Publisher/Subscriber Dynamic pub&sub DDS communication using dynamic 
     sub->CloseChannel();
 }
 
+constexpr auto TOPIC_NAME = "rt/low_state";
 TEST_CASE("Publisher/Subscriber Dynamic pub& Static sub DDS communication using dynamic data test cases",
           "[PUBSUB_DY_USE_IDL]") {
     using namespace jsr::common::dds;
-    constexpr auto TOPIC_NAME = "rt/low_state";
     // lowstate
     jrc::ChannelFactory::Instance()->Init(0);
 
@@ -122,8 +122,8 @@ TEST_CASE("Publisher/Subscriber Dynamic pub& Static sub DDS communication using 
             auto motor_state_parallel = data->loan_value(data->get_member_id_by_name("motor_state_parallel"));
             auto motor_state_serial = data->loan_value(data->get_member_id_by_name("motor_state_serial"));
 
-            float voltage, current, remaining_cap, total_cap, soc;
-            uint32_t cycle;
+            float voltage{}, current{}, remaining_cap{}, total_cap{}, soc{};
+            uint32_t cycle = 0;
             bms_state->get_float32_value(voltage, bms_state->get_member_id_by_name("voltage"));
             bms_state->get_float32_value(current, bms_state->get_member_id_by_name("current"));
             bms_state->get_float32_value(remaining_cap, bms_state->get_member_id_by_name("remaining_cap"));
@@ -157,9 +157,9 @@ TEST_CASE("Publisher/Subscriber Dynamic pub& Static sub DDS communication using 
             auto motor_test = [](DdsDynamicData::_ref_type& motor_seq, size_t count) {
                 for (size_t i = 0; i < 23; ++i) {
                     auto motor_data = motor_seq->loan_value(i);
-                    uint8_t mode, temp;
-                    float q, dq, ddq, tau_est;
-                    uint32_t lost;
+                    uint8_t mode = 0, temp = 0;
+                    float q{}, dq{}, ddq{}, tau_est{};
+                    uint32_t lost = 0;
                     std::vector<uint32_t> reserve;
                     motor_data->get_uint8_value(mode, motor_data->get_member_id_by_name("mode"));
                     motor_data->get_float32_value(q, motor_data->get_member_id_by_name("q"));
@@ -279,7 +279,7 @@ TEST_CASE("Idl Dynamic type union test", "[UNION]") {
             data->get_string_value(id, data->get_member_id_by_name("id"));
             REQUIRE(id == "0177");
             data->get_complex_value(union_data, data->get_member_id_by_name("data"));
-            uint8_t disc;
+            uint8_t disc = 0;
             UnionVal val;
             union_data->get_uint8_value(disc, union_data->get_member_id_by_name("discriminator"));
             switch (disc) {
@@ -360,6 +360,6 @@ TEST_CASE("Idl Dynamic type serialize test", "[DY_JSON]") {
     REQUIRE(json["imu_state"]["acc"][0] == Catch::Approx(1.0));
     REQUIRE(json["imu_state"]["acc"][1] == Catch::Approx(0.0));
     REQUIRE(json["imu_state"]["acc"][2] == Catch::Approx(0.0));
-    REQUIRE(json["motor_state_parallel"].size() == 0);
-    REQUIRE(json["motor_state_serial"].size() == 0);
+    REQUIRE(json["motor_state_parallel"].empty());
+    REQUIRE(json["motor_state_serial"].empty());
 }

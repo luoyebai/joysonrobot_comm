@@ -14,23 +14,25 @@ template <typename MSG>
 class ChannelSubscriber {
    public:
     template <typename T = MSG, typename = jsr::common::dds::not_dynamic_data_t<T>>
-    explicit ChannelSubscriber(const std::string& channel_name) : channel_name_(channel_name) {}
+    explicit ChannelSubscriber(std::string channel_name) : channel_name_(std::move(channel_name)) {}
     template <typename T = MSG, typename = jsr::common::dds::not_dynamic_data_t<T>>
-    explicit ChannelSubscriber(const std::string& channel_name, const std::function<void(const void*)>& handler)
-        : channel_name_(channel_name), handler_(handler) {}
+    explicit ChannelSubscriber(std::string channel_name, std::function<void(const void*)> handler)
+        : channel_name_(std::move(channel_name)), handler_(std::move(handler)) {}
 
     template <typename T = MSG, typename = jsr::common::dds::is_dynamic_data_t<T>>
-    explicit ChannelSubscriber(const std::string& channel_name,
+    explicit ChannelSubscriber(std::string channel_name,
                                jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder)
-        : channel_name_(channel_name), type_builder_(type_builder) {}
+        : channel_name_(std::move(channel_name)), type_builder_(std::move(type_builder)) {}
     template <typename T = MSG, typename = jsr::common::dds::is_dynamic_data_t<T>>
-    explicit ChannelSubscriber(const std::string& channel_name,
+    explicit ChannelSubscriber(std::string channel_name,
                                jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder,
-                               const std::function<void(const void*)>& handler)
-        : channel_name_(channel_name), type_builder_(type_builder), handler_(handler) {}
+                               std::function<void(const void*)> handler)
+        : channel_name_(std::move(channel_name)),
+          type_builder_(std::move(type_builder)),
+          handler_(std::move(handler)) {}
 
-    void InitChannel(const std::function<void(const void*)>& handler) {
-        handler_ = handler;
+    void InitChannel(std::function<void(const void*)> handler) {
+        handler_ = std::move(handler);
         InitChannel();
     }
 
@@ -39,7 +41,7 @@ class ChannelSubscriber {
             fmt::print(stderr, "ChannelSubscriber::InitChannel: handler is not set\n");
             return;
         }
-        if constexpr (jsr::common::dds::is_dynamic_data_v<MSG>) {
+        if constexpr (jsr::common::dds::IS_DYNAMIC_DATA_V<MSG>) {
             assert(type_builder_ != nullptr && "ChannelSubscriber::InitChannel(): type builder is null");
             channel_ptr_ = ChannelFactory::Instance()->CreateRecvChannel(channel_name_, type_builder_, handler_);
         } else {

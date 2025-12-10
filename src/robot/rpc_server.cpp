@@ -54,7 +54,7 @@ int32_t RpcServer::SendResponse(const std::string& uuid, const Response& resp) {
     rpc_resp_msg.uuid(uuid);
     rpc_resp_msg.header(resp.GetHeader().ToJson().dump());
     rpc_resp_msg.body(resp.GetBody());
-    return channel_publisher_->Write(&rpc_resp_msg);
+    return static_cast<int32_t>(channel_publisher_->Write(&rpc_resp_msg));
 }
 
 }  // namespace jsr::robot::rpc

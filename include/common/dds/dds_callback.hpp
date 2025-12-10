@@ -31,7 +31,7 @@ using DdsMessageHandler = std::function<void(const void*)>;
 class DdsReaderCallback {
    public:
     DdsReaderCallback() = default;
-    explicit DdsReaderCallback(const DdsMessageHandler& handler) : handler_(handler){};
+    explicit DdsReaderCallback(DdsMessageHandler handler) : handler_(std::move(handler)){};
     DdsReaderCallback(const DdsReaderCallback& other) = default;
     DdsReaderCallback& operator=(const DdsReaderCallback& other) = default;
     ~DdsReaderCallback() = default;

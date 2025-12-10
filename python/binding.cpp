@@ -34,7 +34,7 @@ namespace jsr::robot::little_robot {
 class __attribute__((visibility("hidden"))) LRLowStateSubscriber
     : public std::enable_shared_from_this<LRLowStateSubscriber> {
    public:
-    explicit LRLowStateSubscriber(const py::function& py_handler) : py_handler_(py_handler) {}
+    explicit LRLowStateSubscriber(py::function py_handler) : py_handler_(std::move(py_handler)) {}
 
     void InitChannel() {
         py::gil_scoped_release release;
@@ -44,7 +44,7 @@ class __attribute__((visibility("hidden"))) LRLowStateSubscriber
                 if (auto shared_this = weak_this.lock()) {
                     {
                         py::gil_scoped_acquire acquire;
-                        const LowState* low_state_msg = static_cast<const LowState*>(msg);
+                        const auto* low_state_msg = static_cast<const LowState*>(msg);
                         shared_this->py_handler_(low_state_msg);
                     }
                 }

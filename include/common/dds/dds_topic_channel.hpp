@@ -32,10 +32,10 @@ class DdsTopicChannel {
     DdsTopicChannel() = default;
     ~DdsTopicChannel() = default;
 
-    void SetTopic(DdsTopicPtr topic) { topic_ = topic; }
+    void SetTopic(DdsTopicPtr topic) { topic_ = std::move(topic); }
 
     void SetWriter(const DdsPublisherPtr& publisher, const DataWriterQos& qos) {
-        auto raw_writer = publisher->create_datawriter(topic_.get(), qos);
+        auto* raw_writer = publisher->create_datawriter(topic_.get(), qos);
         if (raw_writer == nullptr) {
             fmt::print(stderr, "Failed to create writer.\n");
             return;
@@ -75,7 +75,7 @@ class DdsTopicChannel {
         // const MSG *const_msg_ptr = &msg;
         // MSG *non_const_msg_ptr = const_cast<MSG *>(const_msg_ptr);
         // return writer_->write(static_cast<void *>(&non_const_msg_ptr));
-        return writer_->write(msg);
+        return writer_->write(msg) == fdds::dds::RETCODE_OK;
     }
 
    private:

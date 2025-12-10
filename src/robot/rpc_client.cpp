@@ -91,7 +91,7 @@ void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Respo
     // lock map
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        async_cb_map_[uuid] = cb;
+        async_cb_map_[uuid] = std::move(cb);
     }
     // send
     RpcReqMsg msg;

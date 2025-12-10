@@ -10,11 +10,11 @@ namespace jsr::robot::rpc {
 class ResponseHeader {
    public:
     ResponseHeader() = default;
-    explicit ResponseHeader(const int64_t status) : status_(status) {}
+    explicit ResponseHeader(const int32_t status) : status_(status) {}
 
-    void SetStatus(const int64_t status) { status_ = status; }
+    void SetStatus(const int32_t status) { status_ = status; }
 
-    int64_t GetStatus() const { return status_; }
+    int32_t GetStatus() const { return status_; }
 
    public:
     void FromJson(nlohmann::json& json) { status_ = json["status"]; }
@@ -26,7 +26,7 @@ class ResponseHeader {
     }
 
    private:
-    int64_t status_ = -1;
+    int32_t status_ = -1;
 };
 
 }  // namespace jsr::robot::rpc
