@@ -10,7 +10,6 @@
 
 namespace jsr::robot::channel {
 
-
 /**
  * @brief Channel publisher class
  *

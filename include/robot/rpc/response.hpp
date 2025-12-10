@@ -10,8 +10,7 @@ class Response {
    public:
     Response() = default;
     Response(const ResponseHeader& header, const std::string& body) : header_(header), body_(body) {}
-    Response(ResponseHeader&& header, std::string&& body)
-        : header_(std::move(header)), body_(std::move(body)) {}
+    Response(ResponseHeader&& header, std::string&& body) : header_(std::move(header)), body_(std::move(body)) {}
 
     void SetHeader(const ResponseHeader& header) { header_ = header; }
     void SetHeader(ResponseHeader&& header) { header_ = std::move(header); }

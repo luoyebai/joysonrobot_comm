@@ -14,20 +14,19 @@
 #include "robot/little_robot/lr_loco_api.hpp"
 #include "robot/little_robot/lr_loco_client.hpp"
 // IDL LR
-#include "idl/Test.hpp"
+#include "idl/ButtonEvent.hpp"
 #include "idl/ImuState.hpp"
 #include "idl/LowCmd.hpp"
 #include "idl/LowState.hpp"
 #include "idl/MotorCmd.hpp"
 #include "idl/MotorState.hpp"
-#include "idl/ButtonEvent.hpp"
+#include "idl/Test.hpp"
 
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
 namespace jr = jsr::robot;
-
 
 using namespace jsr::msg;
 namespace jsr::robot::little_robot {
