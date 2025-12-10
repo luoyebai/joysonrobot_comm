@@ -53,8 +53,13 @@ jobs:
             xargs -r -I {} git diff origin/main -- {} | \
             clang-tidy-diff -p build
           else
-            find . -name '*.cpp' -o -name '*.h' -o -name '*.hpp' | \
-            xargs clang-tidy -p build
+            find . \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+            -not -path './build/*' \
+            -not -path './third_party/*' \
+            -not -path './tests/test_tools/*' \
+            -not -path './include/idl/*' \
+            -not -path './idl/genfiles/*' \
+            | xargs -r clang-tidy -p build
           fi
 
       # 5️⃣ Build the project
