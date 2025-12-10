@@ -35,10 +35,12 @@ if(NOT EXISTS "${LIB_THIRD}")
 endif()
 
 # =============================
-# include -> add_libray -> link #
+# include & add_libray & link #
 # =============================
 file(GLOB SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp)
 file(GLOB LIB_SOURCECS CONFIGURE_DEPENDS "${LIB_THIRD}/lib*.so*" "${LIB_THIRD}/*.a")
+
+check_third_party_libs()
 
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/include)
@@ -81,7 +83,9 @@ endif()
 # =========
 # doxygen #
 # =========
+if(ENABLE_DOXYGEN)
 include(${cmake_path}/doxygen.cmake)
+endif()
 
 # ==============
 # generate idl #

@@ -130,3 +130,30 @@ function(add_build_type type_name dir_name output)
         set_property(GLOBAL APPEND PROPERTY ${type_name}_targets ${target_name})
     endforeach()
 endfunction()
+
+function(check_third_party_libs)
+    message(STATUS "Checking shared libs in: LIB_THIRD variable")
+    foreach(lib_path ${LIB_SOURCECS})
+        get_filename_component(fname ${lib_path} NAME)
+        string(REGEX REPLACE "^lib_path" "" lib_name ${fname})
+        # match lib so
+        if(lib_path MATCHES "\\.so(\\..*)?$")
+            message(STATUS "→ Checking shared library: ${lib_name}")
+            execute_process(
+                COMMAND ldd ${lib_path}
+                RESULT_VARIABLE LDD_RESULT
+                OUTPUT_VARIABLE LDD_OUTPUT
+                ERROR_VARIABLE LDD_ERROR)
+
+            if(NOT LDD_RESULT EQUAL 0)
+                message(FATAL_ERROR "ldd failed for ${lib_name}\n${LDD_OUTPUT}\n${LDD_ERROR}")
+            endif()
+            if(LDD_OUTPUT MATCHES "not found")
+                message(FATAL_ERROR "Missing dependencies detected in ${lib_name}:\n${LDD_OUTPUT}")
+            endif()
+            message(STATUS "   OK: ${lib_name}")
+        else()
+            message(STATUS "→ Skipping static library: ${lib_name}")
+        endif()
+    endforeach()
+endfunction()

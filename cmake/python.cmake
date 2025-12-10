@@ -18,7 +18,15 @@
 #
 # ========================================================================
 function(add_python_binding target_name python_sources py_install)
-    find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+        message(STATUS "CMake >= 3.18: Use Development.Module")
+        find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+    else()
+        message(STATUS "CMake < 3.18: Use Development")
+        find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+    endif()
+
     message(STATUS "Python3 executable: ${Python3_EXECUTABLE}")
 
     execute_process(
@@ -29,7 +37,14 @@ function(add_python_binding target_name python_sources py_install)
     include_directories(${Python3_INCLUDE_DIRS})
     find_package(pybind11 CONFIG REQUIRED)
 
-    python3_add_library(${target_name}_python MODULE ${python_sources} WITH_SOABI)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+        message(STATUS "CMake >= 3.21: Use WITH_SOABI")
+        python3_add_library(${target_name}_python MODULE ${python_sources} WITH_SOABI)
+    else()
+        message(STATUS "CMake < 3.21: Without WITH_SOABI")
+        python3_add_library(${target_name}_python MODULE ${python_sources})
+    endif()
+
     target_link_libraries(${target_name}_python PRIVATE ${target_name} ${target_name}_idl pybind11::module)
 
     target_compile_definitions(${target_name}_python PRIVATE VERSION_INFO=${PROJECT_VERSION})
