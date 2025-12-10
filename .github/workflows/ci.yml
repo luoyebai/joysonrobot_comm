@@ -2,9 +2,13 @@ name: C++ CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: C++-CI
+  cancel-in-progress: true
 
 jobs:
   build_and_check:
@@ -21,26 +25,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake build-essential clang-format clang-tidy cppcheck
 
-      # 3️⃣ Check code formatting
+      # 3️⃣ Check code formatting (clang-format)
       - name: Check code formatting (clang-format)
         run: |
           echo "Checking C++ formatting..."
-          find . -regex '.*\.\(cpp\|h\|hpp\)$' | xargs clang-format -style=file -i
+          find . -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) ! -path "./third_party/*" | xargs clang-format -style=file -i
           git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
 
       # 4️⃣ Static analysis with clang-tidy
+
       - name: Static analysis (clang-tidy)
         run: |
           mkdir -p build
           cd build
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-          # Check all cpp/h/hpp files
-          find ../ -regex '.*\.\(cpp\|h\|hpp\)$' | xargs clang-tidy -p . || exit 1
+          # Use compile_commands.json
+          find ../ -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) ! -path "../third_party/*" | xargs clang-tidy -p . || exit 1
 
       # 5️⃣ Static analysis with cppcheck
       - name: Static analysis (cppcheck)
         run: |
-          cppcheck --enable=all --inconclusive --std=c++17 --force . || exit 1
+          cppcheck --enable=all --inconclusive --std=c++17 --force --exclude=third_party . || exit 1
 
       # 6️⃣ Build the project
       - name: Build project
@@ -55,4 +60,3 @@ jobs:
         run: |
           cd build
           ctest --output-on-failure
-
