@@ -1,0 +1,58 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential clang-format clang-tidy cppcheck
+
+      # 3️⃣ Check code formatting
+      - name: Check code formatting (clang-format)
+        run: |
+          echo "Checking C++ formatting..."
+          find . -regex '.*\.\(cpp\|h\|hpp\)$' | xargs clang-format -style=file -i
+          git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
+
+      # 4️⃣ Static analysis with clang-tidy
+      - name: Static analysis (clang-tidy)
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+          # Check all cpp/h/hpp files
+          find ../ -regex '.*\.\(cpp\|h\|hpp\)$' | xargs clang-tidy -p . || exit 1
+
+      # 5️⃣ Static analysis with cppcheck
+      - name: Static analysis (cppcheck)
+        run: |
+          cppcheck --enable=all --inconclusive --std=c++17 --force . || exit 1
+
+      # 6️⃣ Build the project
+      - name: Build project
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+          cmake --build . -- -j$(nproc)
+
+      # 7️⃣ Run unit tests
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
