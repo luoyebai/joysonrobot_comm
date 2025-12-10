@@ -36,7 +36,8 @@ jobs:
           -not -path './include/idl/*' \
           -not -path './tests/test_tools/*' \
           -not -path './third_party/*' \
-          | xargs clang-format -style=file -i git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
+          | xargs clang-format -style=file -i
+          git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
 
       # 4️⃣ Static analysis with clang-tidy
       - name: Static analysis (clang-tidy)
