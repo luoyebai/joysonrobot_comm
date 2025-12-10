@@ -139,16 +139,15 @@ endfunction()
 #
 # Global property:
 #
-# * LIB_SOURCECS -> List of third party libraries to check
+# * LIB_SOURCECS       -> List of third party libraries to check
 # ========================================================================
 function(check_third_party_libs)
     message(STATUS "Checking shared libs in: LIB_THIRD variable")
     foreach(lib_path ${LIB_SOURCECS})
         get_filename_component(fname ${lib_path} NAME)
-        string(REGEX REPLACE "^lib_path" "" lib_name ${fname})
         # match lib so
         if(lib_path MATCHES "\\.so(\\..*)?$")
-            message(STATUS "→ Checking shared library: ${lib_name}")
+            message(STATUS "→ Checking shared library: ${fname}")
             execute_process(
                 COMMAND ldd ${lib_path}
                 RESULT_VARIABLE LDD_RESULT
@@ -156,14 +155,25 @@ function(check_third_party_libs)
                 ERROR_VARIABLE LDD_ERROR)
 
             if(NOT LDD_RESULT EQUAL 0)
-                message(FATAL_ERROR "ldd failed for ${lib_name}\n${LDD_OUTPUT}\n${LDD_ERROR}")
+                message(FATAL_ERROR "ldd failed for ${fname}\n${LDD_OUTPUT}\n${LDD_ERROR}")
             endif()
-            if(LDD_OUTPUT MATCHES "not found")
-                message(FATAL_ERROR "Missing dependencies detected in ${lib_name}:\n${LDD_OUTPUT}")
-            endif()
-            message(STATUS "   OK: ${lib_name}")
+            string(REGEX REPLACE "\n" ";" LDD_LINES "${LDD_OUTPUT}")
+            foreach(line ${LDD_LINES})
+                string(FIND "${line}" "not found" NOT_FOUND_POS)
+                if(NOT_FOUND_POS GREATER -1)
+                    string(REGEX MATCH "[^[:space:]]+\\.so(\\.[0-9]+)*" MISSING_SO "${line}")
+                    list(FIND LIB_SOURCECS "${MISSING_SO}" FOUND_POS)
+                    message(STATUS ${LIB_SOURCECS})
+                    if(FOUNT_POS EQUAL -1)
+                        message(FATAL_ERROR "Missing dependency detected in ${fname}:\n${MISSING_SO}")
+                    else()
+                        message(STATUS "Warning: missing ${line}, but ignored because it's in third_party")
+                    endif()
+                endif()
+            endforeach()
+            message(STATUS "   OK: ${fname}")
         else()
-            message(STATUS "→ Skipping static library: ${lib_name}")
+            message(STATUS "→ Skipping static library: ${fname}")
         endif()
     endforeach()
 endfunction()
