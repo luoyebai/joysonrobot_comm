@@ -1,7 +1,7 @@
 module jsr {
   module msg {
     /**
-     * @brief This is imu state idl file
+     * brief This is imu state idl file
      */
     struct ImuState {
       float rpy[3];

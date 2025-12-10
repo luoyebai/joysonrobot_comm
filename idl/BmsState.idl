@@ -1,7 +1,7 @@
 module jsr {
   module msg {
     /**
-     * @brief This is bms state idl file
+     * brief This is bms state idl file
      */
     struct BmsState {
       float voltage;
