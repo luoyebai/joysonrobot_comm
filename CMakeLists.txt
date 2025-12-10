@@ -37,13 +37,17 @@ endif()
 # =============================
 # include & add_libray & link #
 # =============================
+
+# src
 file(GLOB SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp)
-file(GLOB LIB_SOURCECS CONFIGURE_DEPENDS "${LIB_THIRD}/lib*.so*" "${LIB_THIRD}/*.a")
 
-check_third_party_libs()
-
+# include
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/include)
+
+# libs
+file(GLOB LIB_SOURCECS CONFIGURE_DEPENDS "${LIB_THIRD}/lib*.so*" "${LIB_THIRD}/*.a")
+check_third_party_libs()
 
 if(BUILD_SDK_SHARED)
     add_library(${TARGET_NAME} SHARED ${SOURCES})
@@ -84,7 +88,7 @@ endif()
 # doxygen #
 # =========
 if(ENABLE_DOXYGEN)
-include(${cmake_path}/doxygen.cmake)
+    include(${cmake_path}/doxygen.cmake)
 endif()
 
 # ==============
