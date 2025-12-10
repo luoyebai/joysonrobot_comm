@@ -292,6 +292,17 @@ int main() {
 }
 ```
 
+- You can generate the detailed API documentation using Doxygen:
+
+```sh
+sudo apt-get install doxygen
+cd build && cmake .. -DENABLE_DOXYGEN=ON
+make doc
+```
+
+After the build completes, open `build/docs/html/index.html` in any web browser to view the generated documentation.
+
+---
 
 ## License
 
@@ -311,6 +322,8 @@ This project uses the following third-party libraries:
 
 1. cmake error
 
+- python related error
+
 ```sh
 CMake Error at cmake/python.cmake:39 (message):
   pybind11-stubgen not found
@@ -321,6 +334,17 @@ Call Stack (most recent call first):
 Solution:
 Install pybind11-stubgen and make sure its installation directory is added to your system’s PATH environment variable.
 This tool is required for generating Python interface bindings.
+
+- third-party related error
+
+```sh
+CMake Error at cmake/common.cmake:152 (message):
+  Missing dependencies detected in libfastdds.so:
+  third_party/lib/aarch64/libfastdds.so:
+  /usr/lib/aarch64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.30' not
+  found (required by third_party/lib/aarch64/libfastdds.so)
+```
+Solution: Please manually compile Fast DDS and replace third_party/lib/<ARCH>/<FASTDDS_LIBS> with the newly built libraries. This issue commonly occurs on Ubuntu 20.04. Refer to the official Fast DDS documentation for build instructions.
 
 2. make error
 
@@ -349,7 +373,7 @@ If you need to use ROS 2 together with this project at runtime, manually configu
 ## Future Plans
 
 - [x] Add DDS asynchronous RPC support
-- [x] Automatically generate basic RPC code from IDL
-- [x] Add gRPC support
-- [x] Add MQTT support
-- [x] Add WebRTC support
+- [ ] Automatically generate basic RPC code from IDL
+- [ ] Add gRPC support
+- [ ] Add MQTT support
+- [ ] Add WebRTC support

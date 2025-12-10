@@ -286,6 +286,18 @@ int main() {
 }
 ```
 
+- 具体细节可以通过doxygen生成文档
+
+```sh
+sudo apt-get install doxygen
+cd build && cmake .. -DENABLE_DOXYGEN=ON
+make doc
+```
+
+使用任意浏览器打开`build/docs/html/index.html`即可查看文档。
+
+---
+
 ## 许可证
 
 本项目采用 Apache 许可证 2.0 版本授权，具体条款详见 LICENSE 文件。
@@ -303,13 +315,28 @@ int main() {
 
 1. cmake 报错
 
+- python 相关报错
+
 ```sh
 CMake Error at cmake/python.cmake:39 (message):
   pybind11-stubgen not found
 Call Stack (most recent call first):
   CMakeLists.txt:99 (add_python_binding)
 ```
+
 解决方案：安装 pybind11-stubgen，并找到所在路径，将其添加至环境变量PATH中，python接口绑定需要该程序。
+
+- third_party 相关报错
+
+```sh
+CMake Error at cmake/common.cmake:152 (message):
+  Missing dependencies detected in libfastdds.so:
+  third_party/lib/aarch64/libfastdds.so:
+  /usr/lib/aarch64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.30' not
+  found (required by third_party/lib/aarch64/libfastdds.so)
+```
+
+解决方案：请手动编译 fastdds 并将third_party/lib/<ARCH>/<FASTDDS_LIBS> 替换编译生成的文件，通常在ubuntu20.04 出现，请参考 fastdds 官方文档进行编译。
 
 2. make 报错
 
@@ -320,18 +347,17 @@ Traceback (most recent call last):
 ImportError: xxx/third_party/lib/x86_64/libfastdds.so.3.4: undefined symbol: _ZN8eprosima7fastcdr3Cdr9serializeEt
 ```
 
-通过 ldd 命令查看 libfastdds.so.3.4 对应的 libfastcdr.so.2，可能存在错误链接，请检查环境变量，如 ROS2 等依赖 libfastcdr.so.2 的库，编译时取消相关环境变量，如需要搭配 ROS2 使用该项目，请在使用时候手动设置 cmake 动态链接库路径，详见 examples/CMakeLists.txt。
+- 通过 ldd 命令查看 libfastdds.so.3.4 对应的 libfastcdr.so.2，可能存在错误链接，请检查环境变量，如 ROS2 等依赖 libfastcdr.so.2 的库，编译时取消相关环境变量，如需要搭配 ROS2 使用该项目，请在使用时候手动设置 cmake 动态链接库路径，详见 examples/CMakeLists.txt。
 
 ```sh
 ldd ../third_party/lib/x86_64/libfastdds.so.3.4 | grep libfastcdr.so.2
 ```
-
 ---
 
 ## 未来计划
 
-- [x] 添加DDS异步RPC支持
-- [x] 通过IDL自动生成基础RPC代码
-- [x] 添加gRPC支持
-- [x] 添加MQTT支持
-- [x] 添加WebRTC支持
+- [x] 添加异步RPC通讯支持
+- [ ] 通过IDL自动生成基础RPC代码
+- [ ] 添加gRPC支持
+- [ ] 添加MQTT支持
+- [ ] 添加WebRTC支持
