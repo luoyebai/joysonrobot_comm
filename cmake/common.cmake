@@ -131,6 +131,16 @@ function(add_build_type type_name dir_name output)
     endforeach()
 endfunction()
 
+# ========================================================================
+# Function:
+#
+# * check_third_party_libs()
+# * Checks for missing dependencies in third party libraries
+#
+# Global property:
+#
+# * LIB_SOURCECS -> List of third party libraries to check
+# ========================================================================
 function(check_third_party_libs)
     message(STATUS "Checking shared libs in: LIB_THIRD variable")
     foreach(lib_path ${LIB_SOURCECS})
