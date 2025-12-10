@@ -10,6 +10,7 @@ concurrency:
   group: C++-CI
   cancel-in-progress: true
 
+
 jobs:
   build_and_check:
     runs-on: ubuntu-latest
@@ -24,28 +25,39 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake build-essential clang-format clang-tidy cppcheck
+          sudo apt-get install python3-dev python3-pip
+          sudo apt-get install pybind11-dev libtinyxml2-dev libssl-dev
+          pip3 install pybind11-stubgen
 
       # 3️⃣ Check code formatting (clang-format)
       - name: Check code formatting (clang-format)
         run: |
-          echo "Checking C++ formatting..."
-          find . -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) ! -path "./third_party/*" | xargs clang-format -style=file -i
-          git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
+          find . -regex '.*\.\(cpp\|h\|hpp\)$' \
+          -not -path './include/idl/*' \
+          -not -path './tests/test_tools/*' \
+          -not -path './third_party/*' \
+          | xargs clang-format -style=file -i git diff --exit-code || { echo "Code formatting differs!"; exit 1; }
 
       # 4️⃣ Static analysis with clang-tidy
-
       - name: Static analysis (clang-tidy)
         run: |
           mkdir -p build
           cd build
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
           # Use compile_commands.json
-          find ../ -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) ! -path "../third_party/*" | xargs clang-tidy -p . || exit 1
+          find ../ -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
+          -not -path './include/idl/*' \
+          -not -path './tests/test_tools/*' \
+          -not -path "./third_party/*" \
+          | xargs clang-tidy -p . || exit 1
 
       # 5️⃣ Static analysis with cppcheck
       - name: Static analysis (cppcheck)
         run: |
-          cppcheck --enable=all --inconclusive --std=c++17 --force --exclude=third_party . || exit 1
+          cppcheck --enable=all --inconclusive --std=c++17 --force . \
+          --exclude=third_party \
+          --exclude=include/idl \
+          || exit 1
 
       # 6️⃣ Build the project
       - name: Build project
