@@ -53,30 +53,30 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
     // wait for response
     if (future.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::timeout) {
         // timeout
-        resp.SetHeader(ResponseHeader(RpcStatusCodeTimeout));
+        resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
     } else {
         resp = future.get();
     }
 
     switch (resp.GetHeader().GetStatus()) {
-        case jr::rpc::RpcStatusCodeSuccess:
+        case jr::rpc::RPC_STATUS_CODE_SUCCESS:
             break;
-        case jr::rpc::RpcStatusCodeTimeout:
+        case jr::rpc::RPC_STATUS_CODE_TIMEOUT:
             fmt::print(stderr, "Rpc client response timeout\n");
             break;
-        case jr::rpc::RpcStatusCodeBadRequest:
+        case jr::rpc::RPC_STATUS_CODE_BAD_REQUEST:
             fmt::print(stderr, "Rpc client response code bad\n");
             break;
-        case jr::rpc::RpcStatusCodeInternalServerError:
+        case jr::rpc::RPC_STATUS_CODE_INTERNAL_SERVER_ERROR:
             fmt::print(stderr, "Rpc client response internal server error\n");
             break;
-        case jr::rpc::RpcStatusCodeServerRefused:
+        case jr::rpc::RPC_STATUS_CODE_SERVER_REFUSED:
             fmt::print(stderr, "Rpc client response server refused\n");
             break;
-        case jr::rpc::RpcStatusCodeStateTransitionFailed:
+        case jr::rpc::RPC_STATUS_CODE_STATE_TRANSITION_FAILED:
             fmt::print(stderr, "Rpc client response transition failed\n");
             break;
-        case jr::rpc::RpcStatusCodeInvalid:
+        case jr::rpc::RPC_STATUS_CODE_INVALID:
             fmt::print(stderr, "Rpc client response code invalid\n");
             break;
         default:
@@ -132,7 +132,7 @@ void RpcClient::DdsSubMsgHandler(const void* msg) {
         header = ResponseHeader(status);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Response header error:{}\n", e.what());
-        header.SetStatus(jr::rpc::RpcStatusCodeInvalid);
+        header.SetStatus(jr::rpc::RPC_STATUS_CODE_INVALID);
     }
     body = resp_msg->body();
 

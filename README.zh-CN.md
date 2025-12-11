@@ -235,7 +235,7 @@ class LocoServer : public jrr::RpcServer {
 			// 对所有的服务进行响应
 			// 详细见代码：
             default:
-                response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeInvalid));
+                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_INVALID));
                 response.SetBody("Get unknown request");
 				break;
         }

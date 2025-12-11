@@ -37,7 +37,7 @@ void RpcServer::DdsReqMsgHandler(const void* msg) {
         header = RequestHeader(api_id);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Request header error: {}\n", e.what());
-        header.SetApiId(jr::rpc::RpcStatusCodeInvalid);
+        header.SetApiId(jr::rpc::RPC_STATUS_CODE_INVALID);
     }
 
     body = req_msg->body();

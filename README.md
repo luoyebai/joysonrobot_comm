@@ -238,7 +238,7 @@ private:
         switch (static_cast<LocoApiId>(api_id)) {
             // Handle each API ID
             default:
-                response.SetHeader(jrr::ResponseHeader(jrr::RpcStatusCodeInvalid));
+                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_INVALID));
                 response.SetBody("Get unknown request");
                 break;
         }
