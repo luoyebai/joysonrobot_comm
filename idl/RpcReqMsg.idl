@@ -4,7 +4,7 @@ module jsr {
      * brief This class represents the structure RpcReqMsg defined by the user in the IDL file.
      */
     struct RpcReqMsg {
-      string uuid;
+      uint64 uuid;
       string header;
       string body;
     };

@@ -143,30 +143,23 @@ public:
             const RpcReqMsg& x) const;
 
     /*!
-     * @brief This function copies the value in member uuid
-     * @param _uuid New value to be copied in member uuid
+     * @brief This function sets a value in member uuid
+     * @param _uuid New value for member uuid
      */
     FASTDDS_EXPORTED_API void uuid(
-            const std::string& _uuid);
+            uint64_t _uuid);
 
     /*!
-     * @brief This function moves the value in member uuid
-     * @param _uuid New value to be moved in member uuid
+     * @brief This function returns the value of member uuid
+     * @return Value of member uuid
      */
-    FASTDDS_EXPORTED_API void uuid(
-            std::string&& _uuid);
-
-    /*!
-     * @brief This function returns a constant reference to member uuid
-     * @return Constant reference to member uuid
-     */
-    FASTDDS_EXPORTED_API const std::string& uuid() const;
+    FASTDDS_EXPORTED_API uint64_t uuid() const;
 
     /*!
      * @brief This function returns a reference to member uuid
      * @return Reference to member uuid
      */
-    FASTDDS_EXPORTED_API std::string& uuid();
+    FASTDDS_EXPORTED_API uint64_t& uuid();
 
 
     /*!
@@ -286,7 +279,7 @@ public:
 
 private:
 
-    std::string m_uuid;
+    uint64_t m_uuid{0};
     std::string m_header;
     std::string m_body;
 

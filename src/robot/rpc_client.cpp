@@ -107,17 +107,16 @@ void RpcClient::Stop() {
     return;
 }
 
-std::string RpcClient::GenUuid() {
+uint64_t RpcClient::GenUuid() {
     static thread_local std::mt19937_64 rng(std::random_device{}());
     static std::uniform_int_distribution<uint64_t> dist;
-    std::stringstream ss;
-    ss << std::hex << dist(rng);
-    return ss.str();
+    return dist(rng);
 }
 
 void RpcClient::DdsSubMsgHandler(const void* msg) {
     const auto* resp_msg = static_cast<const RpcRespMsg*>(msg);
-    const std::string& uuid = resp_msg->uuid();
+    // const std::string& uuid = resp_msg->uuid();
+    const auto uuid = resp_msg->uuid();
     ResponseHeader header;
     std::string body;
 

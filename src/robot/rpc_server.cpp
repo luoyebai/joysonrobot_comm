@@ -49,7 +49,7 @@ void RpcServer::DdsReqMsgHandler(const void* msg) {
     return;
 }
 
-int32_t RpcServer::SendResponse(const std::string& uuid, const Response& resp) {
+int32_t RpcServer::SendResponse(const uint64_t uuid, const Response& resp) {
     RpcRespMsg rpc_resp_msg;
     rpc_resp_msg.uuid(uuid);
     rpc_resp_msg.header(resp.GetHeader().ToJson().dump());

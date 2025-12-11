@@ -3,7 +3,7 @@ module jsr {
   module msg {
 
     struct RpcRespMsg {
-      string uuid;
+      uint64 uuid;
       string header;
       string body;
     };

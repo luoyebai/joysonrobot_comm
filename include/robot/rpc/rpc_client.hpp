@@ -31,7 +31,7 @@ class RpcClient {
 
     void Stop();
 
-    std::string GenUuid();
+    uint64_t GenUuid();
 
    private:
     void DdsSubMsgHandler(const void* msg);
@@ -41,8 +41,8 @@ class RpcClient {
     };
 
     std::mutex mutex_;
-    std::unordered_map<std::string, std::function<void(Response)>> async_cb_map_;
-    std::unordered_map<std::string, std::shared_ptr<SyncEntry>> resp_map_;
+    std::unordered_map<uint64_t, std::function<void(Response)>> async_cb_map_;
+    std::unordered_map<uint64_t, std::shared_ptr<SyncEntry>> resp_map_;
 
     std::shared_ptr<jr::channel::ChannelPublisher<jsr::msg::RpcReqMsg>> channel_publisher_;
     std::shared_ptr<jr::channel::ChannelSubscriber<jsr::msg::RpcRespMsg>> channel_subscriber_;
