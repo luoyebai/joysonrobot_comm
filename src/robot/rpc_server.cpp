@@ -33,7 +33,7 @@ void RpcServer::DdsReqMsgHandler(const void* msg) {
 
     try {
         nlohmann::json j = nlohmann::json::parse(req_msg->header());
-        auto api_id = j.at("api_id");
+        auto api_id = j.at(RPC_HEADER_JSON_APIID_KEY);
         header = RequestHeader(api_id);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Request header error: {}\n", e.what());

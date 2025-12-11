@@ -14,14 +14,20 @@ using namespace jsr::msg;
 
 namespace jsr::robot::rpc {
 
+constexpr static size_t MAP_RESERVE_INIT = 1024;
+constexpr static auto RPC_REQUEST_CHANNEL_SUFFIX = "/request";
+constexpr static auto RPC_RESPONSE_CHANNEL_SUFFIX = "/response";
+
 void RpcClient::Init(const std::string& channel_name) {
-    channel_publisher_ = std::make_shared<jr::channel::ChannelPublisher<RpcReqMsg>>(channel_name + "/request");
+    channel_publisher_ =
+        std::make_shared<jr::channel::ChannelPublisher<RpcReqMsg>>(channel_name + RPC_REQUEST_CHANNEL_SUFFIX);
+    channel_subscriber_ =
+        std::make_shared<jr::channel::ChannelSubscriber<RpcRespMsg>>(channel_name + RPC_RESPONSE_CHANNEL_SUFFIX);
     channel_publisher_->InitChannel();
-    channel_subscriber_ = std::make_shared<jr::channel::ChannelSubscriber<RpcRespMsg>>(channel_name + "/response");
     channel_subscriber_->InitChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
 
-    resp_map_.reserve(1024);
-    async_cb_map_.reserve(1024);
+    resp_map_.reserve(MAP_RESERVE_INIT);
+    async_cb_map_.reserve(MAP_RESERVE_INIT);
 
     return;
 }
@@ -121,8 +127,8 @@ void RpcClient::DdsSubMsgHandler(const void* msg) {
     std::string body;
 
     try {
-        nlohmann::json j = nlohmann::json::parse(resp_msg->header());
-        auto status = j.at("status");
+        const auto& j = nlohmann::json::parse(resp_msg->header());
+        const auto status = j.at(RPC_HEADER_JSON_STATUS_KEY);
         header = ResponseHeader(status);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Response header error:{}\n", e.what());

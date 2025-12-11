@@ -7,6 +7,8 @@
 
 namespace jsr::robot::rpc {
 
+constexpr static auto RPC_HEADER_JSON_APIID_KEY = "api_id";
+
 class RequestHeader {
    public:
     RequestHeader() = default;
@@ -17,11 +19,11 @@ class RequestHeader {
     int64_t GetApiId() const { return api_id_; }
 
    public:
-    void FromJson(nlohmann::json& json) { api_id_ = json["api_id"]; }
+    void FromJson(nlohmann::json& json) { api_id_ = json[RPC_HEADER_JSON_APIID_KEY]; }
 
     nlohmann::json ToJson() const {
         auto json = nlohmann::json();
-        json["api_id"] = api_id_;
+        json[RPC_HEADER_JSON_APIID_KEY] = api_id_;
         return json;
     }
 

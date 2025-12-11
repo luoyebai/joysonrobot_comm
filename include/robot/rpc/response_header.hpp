@@ -7,6 +7,8 @@
 
 namespace jsr::robot::rpc {
 
+constexpr static auto RPC_HEADER_JSON_STATUS_KEY = "status";
+
 class ResponseHeader {
    public:
     ResponseHeader() = default;
@@ -17,11 +19,11 @@ class ResponseHeader {
     int32_t GetStatus() const { return status_; }
 
    public:
-    void FromJson(nlohmann::json& json) { status_ = json["status"]; }
+    void FromJson(nlohmann::json& json) { status_ = json[RPC_HEADER_JSON_STATUS_KEY]; }
 
     nlohmann::json ToJson() const {
         auto json = nlohmann::json();
-        json["status"] = status_;
+        json[RPC_HEADER_JSON_STATUS_KEY] = status_;
         return json;
     }
 
