@@ -14,6 +14,8 @@
 namespace jsr::robot::common {
 
 using ChangeStatePath = std::unordered_map<int, std::string>;
+
+// Common FSM state
 static const auto DAMPING_STATE =
     std::pair<int, std::string>(static_cast<int>(RobotMode::Damping), RobotModeToString(RobotMode::Damping));
 static const auto PREPARE_STATE =

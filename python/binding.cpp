@@ -100,9 +100,9 @@ class __attribute__((visibility("hidden"))) LRLowCmdPublisher {
 
 }  // namespace jsr::robot::little_robot
 
-PYBIND11_MODULE(jsrsdk_python, m) {
+PYBIND11_MODULE(jsrcomm_python, m) {
     m.doc() = R"pbdoc(
-    python binding of joyson robot sdk
+    python binding of joyson robot comm
     -----------------------
     )pbdoc";
 

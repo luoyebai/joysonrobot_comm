@@ -1,6 +1,6 @@
 import sys
 import time
-from jsrsdk_python import ChannelFactory, LRLowStateSubscriber
+from jsrcomm_python import ChannelFactory, LRLowStateSubscriber
 
 SLEEP_TIME = 1
 

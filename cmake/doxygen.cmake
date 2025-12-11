@@ -6,8 +6,8 @@ set(DOC_OUTPUT_DIR ${CMAKE_BINARY_DIR}/docs)
 
 file(MAKE_DIRECTORY ${DOC_OUTPUT_DIR})
 
-set(PROJECT_NAME_DOC "Joyson Robot SDK Version 2")
-set(PROJECT_BRIEF "Joysonrobot公司提供的机器人SDK封装架构")
+set(PROJECT_NAME_DOC "Joyson Robot COMM Version 2")
+set(PROJECT_BRIEF "Joysonrobot公司提供的机器人COMM封装架构")
 set(DOXYGEN_INPUT_DIRS "${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/src")
 set(DOXYGEN_EXCLUDES "${CMAKE_SOURCE_DIR}/tests" "${CMAKE_SOURCE_DIR}/third_party" "${CMAKE_SOURCE_DIR}/idl")
 

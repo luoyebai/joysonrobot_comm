@@ -1,7 +1,7 @@
 /**
  * @file dds_entity.hpp
  * @author TanJiachun (jiachun.tan@joysonrobot.com)
- * @brief DDS entity declare for Joyson Robot Robotics SDK.
+ * @brief DDS entity declare for Joyson Robot Robotics COMM.
  * @version 0.1
  * @date 2025-07-07
  *

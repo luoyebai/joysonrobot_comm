@@ -1,7 +1,7 @@
 import time
-from jsrsdk_python import ChannelFactory, LRLowCmdPublisher
-from jsrsdk_python import LowCmd, LowCmdType, MotorCmd
-from jsrsdk_python import LRJointCnt, LRJointIndex
+from jsrcomm_python import ChannelFactory, LRLowCmdPublisher
+from jsrcomm_python import LowCmd, LowCmdType, MotorCmd
+from jsrcomm_python import LRJointCnt, LRJointIndex
 
 SLEEP_TIME = 1
 

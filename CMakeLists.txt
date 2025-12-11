@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.5...${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 
 # Project setting
-set(TARGET_NAME jsrsdk)
+set(TARGET_NAME jsrcomm)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(cmake_path ${CMAKE_SOURCE_DIR}/cmake)
 # setting
@@ -49,7 +49,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/include)
 file(GLOB LIB_SOURCECS CONFIGURE_DEPENDS "${LIB_THIRD}/lib*.so*" "${LIB_THIRD}/*.a")
 check_third_party_libs()
 
-if(BUILD_SDK_SHARED)
+if(BUILD_COMM_SHARED)
     add_library(${TARGET_NAME} SHARED ${SOURCES})
 else()
     add_library(${TARGET_NAME} STATIC ${SOURCES})

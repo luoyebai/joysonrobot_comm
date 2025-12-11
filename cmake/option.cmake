@@ -2,7 +2,7 @@
 # All Options:
 #
 # * BUILD_RELEASE             -> ON: build in Release mode, OFF: build in Debug mode
-# * BUILD_SDK_SHARED          -> ON: build SDK as shared library (.so/.dll), OFF: static library (.a/.lib)
+# * BUILD_COMM_SHARED          -> ON: build COMM as shared library (.so/.dll), OFF: static library (.a/.lib)
 # * BUILD_PYTHON_BINDING      -> ON: build Python binding module, OFF: skip
 # * BUILD_TEST                -> ON: build test targets
 # * ENABLE_DOXYGEN            -> ON: use doxygen to generate documentation
@@ -15,7 +15,7 @@
 # Build option
 option(BUILD_RELEASE "Build Type of Release" ON)
 # SHARED(ON) or STATIC(OFF)
-option(BUILD_SDK_SHARED "Build Sdk Type of Shared" OFF)
+option(BUILD_COMM_SHARED "Build Comm Type of Shared" OFF)
 option(BUILD_PYTHON_BINDING "Build Python Binding" ON)
 option(BUILD_TEST "Build Test" ON)
 # Compiling together with Examples requires modifying cmake to add_build_type
@@ -32,7 +32,7 @@ message(
     STATUS "OPTIONS\n"
            "===================================\n"
            "Build Release: ${BUILD_RELEASE}\n"
-           "Build Sdk Shared: ${BUILD_SDK_SHARED}\n"
+           "Build Comm Shared: ${BUILD_COMM_SHARED}\n"
            "Build Python Binding: ${BUILD_PYTHON_BINDING}\n"
            "Build Example: ${BUILD_EXAMPLE}\n"
            "Enable Doxygen: ${ENABLE_DOXYGEN}\n"

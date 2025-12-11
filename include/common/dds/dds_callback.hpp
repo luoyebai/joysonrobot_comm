@@ -1,7 +1,7 @@
 /**
  * @file dds_callback.hpp
  * @author TanJiachun (jiachun.tan@joysonrobot.com)
- * @brief DDS reader callback declare for Joyson Robot Robotics SDK.
+ * @brief DDS reader callback declare for Joyson Robot Robotics COMM.
  * @version 0.1
  * @date 2025-07-07
  *

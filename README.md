@@ -1,32 +1,32 @@
-# Joyson Robot SDK V2
+# Joyson Robot COMM
 
-🤖 Joyson Robot SDK V2
+🤖 Joyson Robot COMM
 
-This is the SDK developed and used by Joyson Robot, designed to provide developers with convenient access to robot APIs. It offers publisher/subscriber communication and corresponding RPC services based on [Fast-DDS](https://github.com/eProsima/Fast-DDS), along with C++ and Python interfaces. Testing is conducted using [Catch2](https://github.com/catchorg/Catch2). The SDK is developed in C++17, built with CMake, and targeted for Linux systems.
+This is the COMM developed and used by Joyson Robot, designed to provide developers with convenient access to robot APIs. It offers publisher/subscriber communication and corresponding RPC services based on [Fast-DDS](https://github.com/eProsima/Fast-DDS), along with C++ and Python interfaces. Testing is conducted using [Catch2](https://github.com/catchorg/Catch2). The COMM is developed in C++17, built with CMake, and targeted for Linux systems.
 
 This repository contains:
 
-1. The SDK implementation [header files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/include) and [source files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/src).
+1. The COMM implementation [header files](https://github.com/luoyebai/joysonrobot_comm/tree/main/include) and [source files](https://github.com/luoyebai/joysonrobot_comm/tree/main/src).
 
-2. The [IDL files](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/idl) used by the SDK and the [scripts](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/third_party/scripts/ddsgen) to generate code from them.
+2. The [IDL files](https://github.com/luoyebai/joysonrobot_comm/tree/main/idl) used by the COMM and the [scripts](https://github.com/luoyebai/joysonrobot_comm/tree/main/third_party/scripts/ddsgen) to generate code from them.
 
-3. The [test code](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/tests) for this SDK.
+3. The [test code](https://github.com/luoyebai/joysonrobot_comm/tree/main/tests) for this COMM.
 
 
-4. The [Python interface implementation](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/python) for this SDK.
+4. The [Python interface implementation](https://github.com/luoyebai/joysonrobot_comm/tree/main/python) for this COMM.
 
-> [Chinese version Readme](https://github.com/luoyebai/joysonrobot_sdk2_user/tree/main/README.zh-CN.md)
+> [Chinese version Readme](https://github.com/luoyebai/joysonrobot_comm/tree/main/README.zh-CN.md)
 
 ---
 
 ## Table of Contents
 
-- [Joyson Robot SDK V2](#joyson-robot-sdk-v2)
+- [Joyson Robot COMM](#joyson-robot-comm)
   - [Table of Contents](#table-of-contents)
   - [Background](#background)
   - [Dependencies](#dependencies)
   - [Usage](#usage)
-    - [Use jsrsdk in another project](#use-jsrsdk-in-another-project)
+    - [Use jsrcomm in another project](#use-jsrcomm-in-another-project)
     - [Code Generator](#code-generator)
     - [Communicating with ROS2](#communicating-with-ros2)
   - [Examples](#examples)
@@ -38,7 +38,7 @@ This repository contains:
 
 ## Background
 
-`Joyson Robot SDK V2` is inspired by the [Booster Robotics SDK](https://github.com/BoosterRobotics/booster_robotics_sdk) project, with extended implementations, modifications, and improvements to its modules and features. It aims to deliver a similar development experience.
+`Joyson Robot COMM` is inspired by the [Booster Robotics SDK](https://github.com/BoosterRobotics/booster_robotics_sdk) project, with extended implementations, modifications, and improvements to its modules and features. It aims to deliver a similar development experience.
 
 > **Note: Internal source code and backend code should not be publicly distributed.**
 
@@ -76,39 +76,39 @@ cd build
 make test
 ```
 
-Install the SDK to your system:
+Install the COMM to your system:
 
 ```sh
 cd build && sudo make install
 ```
 
-> The Python interface requires the SDK to be installed system-wide. And you need to set the environment variable export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+> The Python interface requires the COMM to be installed system-wide. And you need to set the environment variable export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-### Use jsrsdk in another project
-- If jsrsdk is already installed
+### Use jsrcomm in another project
+- If jsrcomm is already installed
 Add the following to CMakeLists.txt:
 
 ```cmake
-find_package(jsrsdk REQUIRED)
-target_include_directories(${TARGET_NAME} PUBLIC /usr/local/include/jsrsdk)
-target_link_libraries(${TARGET_NAME} PRIVATE jsrsdk fastcdr fastrtps)
+find_package(jsrcomm REQUIRED)
+target_include_directories(${TARGET_NAME} PUBLIC /usr/local/include/jsrcomm)
+target_link_libraries(${TARGET_NAME} PRIVATE jsrcomm fastcdr fastrtps)
 # Or put it before <TARGET>
-# include_directories(BEFORE /usr/local/include/jsrsdk)
-# link_libraries(jsrsdk fastcdr fastrtps)
+# include_directories(BEFORE /usr/local/include/jsrcomm)
+# link_libraries(jsrcomm fastcdr fastrtps)
 ```
 
-- If using a prebuilt jsrsdk directly
+- If using a prebuilt jsrcomm directly
 Add the following to CMakeLists.txt:
 
 ```cmake
-set(JSRSDK_LIB "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsrsdk/lib/")
-file(GLOB JSRSDK_LIB_SOURCES CONFIGURE_DEPENDS "${JSRSDK_LIB}/lib*.so*")
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsrsdk/include)
-target_link_libraries(<TARGET> PRIVATE ${JSRSDK_LIB_SOURCES})
+set(JSRCOMM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsrcomm/lib/")
+file(GLOB JSRCOMM_LIB_SOURCES CONFIGURE_DEPENDS "${JSRCOMM_LIB}/lib*.so*")
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsrcomm/include)
+target_link_libraries(<TARGET> PRIVATE ${JSRCOMM_LIB_SOURCES})
 ```
-Place the prebuilt jsrsdk library files into the third_party/jsrsdk/lib folder, and the prebuilt jsrsdk header files into third_party/jsrsdk/include (including header and library files of third-party dependencies).
+Place the prebuilt jsrcomm library files into the third_party/jsrcomm/lib folder, and the prebuilt jsrcomm header files into third_party/jsrcomm/include (including header and library files of third-party dependencies).
 
-Then jsrsdk can be used. The Python interface must be written in python/binding.cpp and jsrsdk must be installed to use it.
+Then jsrcomm can be used. The Python interface must be written in python/binding.cpp and jsrcomm must be installed to use it.
 
 ### Code Generator
 
@@ -140,7 +140,7 @@ make -j$(nproc)
 
 ### Communicating with ROS2
 
-Please ensure that [ROS2](https://docs.ros.org/en/humble/Installation.html) is installed before using the SDK's topic communication interface. Also, ensure that the msg interface in ROS2 matches the IDL file.
+Please ensure that [ROS2](https://docs.ros.org/en/humble/Installation.html) is installed before using the COMM's topic communication interface. Also, ensure that the msg interface in ROS2 matches the IDL file.
 
 > Note: Topic names must follow the ROS2 naming convention and be named "rt/xxx", where rt is the abbreviation for ROS TOPIC and xxx is the name of the topic discovered by ROS2.
 
