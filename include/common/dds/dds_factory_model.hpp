@@ -77,25 +77,24 @@ class DdsFactoryModel {
     DdsTopicChannelPtr<MSG> CreateTopicChannel(const std::string& topic_name) {
         DdsTypeSupport type_support(new MSG());
         DdsTopicChannelPtr<MSG> topic_channel = std::make_shared<DdsTopicChannel<MSG>>();
-        if (participant_ == nullptr) {
-            fmt::print(stderr, "Failed to create participant.\n");
-            return nullptr;
-        }
-        auto topic = GetTopic(topic_name);
-        if (topic == nullptr) {
-            type_support.register_type(participant_.get());
-            topic =
-                DdsTopicPtr(participant_->create_topic(topic_name, type_support.get_type_name(), DDS_TOPIC_QOS_DEFAULT),
-                            [](DdsTopic*) {});
+        if (participant_ != nullptr) {
+            auto topic = GetTopic(topic_name);
             if (topic == nullptr) {
-                fmt::print(stderr, "Failed to create topic.\n");
-                return nullptr;
+                type_support.register_type(participant_.get());
+                topic = DdsTopicPtr(
+                    participant_->create_topic(topic_name, type_support.get_type_name(), DDS_TOPIC_QOS_DEFAULT),
+                    [](DdsTopic*) {});
+                if (topic == nullptr) {
+                    fmt::print(stderr, "Failed to create topic.\n");
+                    return nullptr;
+                }
+                topic_map_[topic_name] = topic;
             }
-            topic_map_[topic_name] = topic;
+            topic_channel->SetTopic(topic);
+            return topic_channel;
         }
-
-        topic_channel->SetTopic(topic);
-        return topic_channel;
+        fmt::print(stderr, "Failed to create participant.\n");
+        return nullptr;
     }
 
     // dynamic
@@ -104,24 +103,24 @@ class DdsFactoryModel {
                                                const DdsDynamicTypeBuilder::_ref_type& type_builder) {
         DdsTypeSupport type_support(new DdsDynamicPubSubType(type_builder->build()));
         DdsTopicChannelPtr<MSG> topic_channel = std::make_shared<DdsTopicChannel<MSG>>();
-        if (participant_ == nullptr) {
-            fmt::print(stderr, "Failed to create participant.\n");
-            return nullptr;
-        }
-        auto topic = GetTopic(topic_name);
-        if (topic == nullptr) {
-            type_support.register_type(participant_.get());
-            topic =
-                DdsTopicPtr(participant_->create_topic(topic_name, type_support.get_type_name(), DDS_TOPIC_QOS_DEFAULT),
-                            [](DdsTopic*) {});
+        if (participant_ != nullptr) {
+            auto topic = GetTopic(topic_name);
             if (topic == nullptr) {
-                fmt::print(stderr, "Failed to create topic.\n");
-                return nullptr;
+                type_support.register_type(participant_.get());
+                topic = DdsTopicPtr(
+                    participant_->create_topic(topic_name, type_support.get_type_name(), DDS_TOPIC_QOS_DEFAULT),
+                    [](DdsTopic*) {});
+                if (topic == nullptr) {
+                    fmt::print(stderr, "Failed to create topic.\n");
+                    return nullptr;
+                }
+                topic_map_[topic_name] = topic;
             }
-            topic_map_[topic_name] = topic;
+            topic_channel->SetTopic(topic);
+            return topic_channel;
         }
-        topic_channel->SetTopic(topic);
-        return topic_channel;
+        fmt::print(stderr, "Failed to create participant.\n");
+        return nullptr;
     }
 
     template <typename MSG>

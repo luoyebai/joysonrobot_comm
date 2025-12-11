@@ -36,11 +36,12 @@ class DdsTopicChannel {
 
     void SetWriter(const DdsPublisherPtr& publisher, const DataWriterQos& qos) {
         auto* raw_writer = publisher->create_datawriter(topic_.get(), qos);
-        if (raw_writer == nullptr) {
-            fmt::print(stderr, "Failed to create writer.\n");
+        if (raw_writer != nullptr) {
+            writer_ = DdsWriterPtr(raw_writer, [](DdsWriter*) {});
             return;
         }
-        writer_ = DdsWriterPtr(raw_writer, [](DdsWriter*) {});
+        fmt::print(stderr, "Failed to create writer.\n");
+        return;
     }
 
     template <typename T = MSG, typename = not_dynamic_data_t<T>>
