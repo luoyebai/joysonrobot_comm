@@ -254,9 +254,6 @@ using namespace eprosima::fastcdr::exception;
 #include <utility>
 #include <fastdds/rtps/common/SerializedPayload.hpp>
 #include <fastdds/rtps/common/InstanceHandle.hpp>
-// #include <fastrtps/types/AnnotationParameterValue.hpp>
-// #include <fastrtps/types/TypeNamesGenerator.hpp>
-// #include <fastrtps/types/TypeObjectFactory.hpp>
 #include <fastdds/utils/md5.hpp>
 #include <fastdds/rtps/common/CdrSerialization.hpp>
 #include <fastdds/dds/core/policy/QosPolicies.hpp>

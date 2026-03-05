@@ -2,10 +2,10 @@
 #include <filesystem>
 #include <unordered_map>
 // DDS
-#include "common/dds/dds_dynamic_factory.hpp"
+#include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 
 namespace jsr::common::dds {
-TypeBuilderRef DdsDynamicFactory::CreateStructType(const std::string& name) {
+TypeBuilderRef DdsDynamicFactory::createStructType(const std::string& name) {
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
     desc->kind(TK_STRUCTURE);
     desc->name(name);
@@ -13,7 +13,7 @@ TypeBuilderRef DdsDynamicFactory::CreateStructType(const std::string& name) {
     return DdsDynamicTypeBuilderFactory::get_instance()->create_type(desc);
 }
 
-TypeBuilderRef DdsDynamicFactory::CreateStructType(const std::string& name, TypeRef base_type) {
+TypeBuilderRef DdsDynamicFactory::createStructType(const std::string& name, TypeRef base_type) {
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
     desc->kind(TK_STRUCTURE);
     desc->name(name);
@@ -22,7 +22,7 @@ TypeBuilderRef DdsDynamicFactory::CreateStructType(const std::string& name, Type
     return DdsDynamicTypeBuilderFactory::get_instance()->create_type(desc);
 }
 
-void DdsDynamicFactory::AddPrimitiveMember(const TypeBuilderRef& builder, const std::string& name,
+void DdsDynamicFactory::addPrimitiveMember(const TypeBuilderRef& builder, const std::string& name,
                                            fdds::dds::TypeKind tk, uint32_t id) {
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
@@ -34,7 +34,7 @@ void DdsDynamicFactory::AddPrimitiveMember(const TypeBuilderRef& builder, const 
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const std::string& name,
+void DdsDynamicFactory::addSequenceMember(const TypeBuilderRef& builder, const std::string& name,
                                           fdds::dds::TypeKind elem_kind, uint32_t bound, uint32_t id) {
     auto elem_type = DdsDynamicTypeBuilderFactory::get_instance()->get_primitive_type(elem_kind);
     auto seq_type = DdsDynamicTypeBuilderFactory::get_instance()->create_sequence_type(elem_type, bound)->build();
@@ -47,7 +47,7 @@ void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const s
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
+void DdsDynamicFactory::addSequenceMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
                                           uint32_t bound, uint32_t id) {
     auto seq_type =
         DdsDynamicTypeBuilderFactory::get_instance()->create_sequence_type(std::move(elem_type), bound)->build();
@@ -60,7 +60,7 @@ void DdsDynamicFactory::AddSequenceMember(const TypeBuilderRef& builder, const s
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std::string& name,
+void DdsDynamicFactory::addArrayMember(const TypeBuilderRef& builder, const std::string& name,
                                        fdds::dds::TypeKind elem_kind, const std::vector<uint32_t>& dims, uint32_t id) {
     auto elem_type = DdsDynamicTypeBuilderFactory::get_instance()->get_primitive_type(elem_kind);
     auto arr_type = DdsDynamicTypeBuilderFactory::get_instance()->create_array_type(elem_type, dims)->build();
@@ -73,7 +73,7 @@ void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std:
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
+void DdsDynamicFactory::addArrayMember(const TypeBuilderRef& builder, const std::string& name, TypeRef elem_type,
                                        const std::vector<uint32_t>& dims, uint32_t id) {
     auto arr_type =
         DdsDynamicTypeBuilderFactory::get_instance()->create_array_type(std::move(elem_type), dims)->build();
@@ -86,7 +86,7 @@ void DdsDynamicFactory::AddArrayMember(const TypeBuilderRef& builder, const std:
     builder->add_member(m);
 }
 
-void DdsDynamicFactory::AddCustomMember(const TypeBuilderRef& builder, const std::string& name, TypeRef type,
+void DdsDynamicFactory::addCustomMember(const TypeBuilderRef& builder, const std::string& name, TypeRef type,
                                         uint32_t id) {
     MemberDescriptorRef m{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
     m->name(name);
@@ -98,11 +98,11 @@ void DdsDynamicFactory::AddCustomMember(const TypeBuilderRef& builder, const std
     builder->add_member(m);
 }
 
-DataRef DdsDynamicFactory::CreateData(TypeRef type) {
+DataRef DdsDynamicFactory::createData(TypeRef type) {
     return DdsDynamicDataFactory::get_instance()->create_data(std::move(type));
 }
 
-TypeBuilderRef DdsDynamicFactory::ParserTypeFromIdl(const std::string& idl_path, const std::string& type_name,
+TypeBuilderRef DdsDynamicFactory::parseTypeFromIdl(const std::string& idl_path, const std::string& type_name,
                                                     const std::string& include_dir) {
     namespace fs = std::filesystem;
     auto include_root_path = fs::path(include_dir);
@@ -130,7 +130,7 @@ TypeBuilderRef DdsDynamicFactory::ParserTypeFromIdl(const std::string& idl_path,
     return dyn_type_builder;
 }
 
-std::string DdsDynamicFactory::ToRos2TypeName(const std::string& dds_name) {
+std::string DdsDynamicFactory::toRos2TypeName(const std::string& dds_name) {
     const std::string ns_sep = "::";
     size_t pos = dds_name.rfind(ns_sep);
     if (pos == std::string::npos) {
@@ -144,7 +144,7 @@ std::string DdsDynamicFactory::ToRos2TypeName(const std::string& dds_name) {
     return ns + "::dds_::" + type + "_";
 }
 
-TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
+TypeBuilderRef DdsDynamicFactory::cloneTypeWithRos2(const TypeRef& type) {
     auto factory = DdsDynamicTypeBuilderFactory::get_instance();
 
     TypeDescriptorRef desc{fdds::dds::traits<DdsTypeDescriptor>::make_shared()};
@@ -154,21 +154,21 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
     switch (desc->kind()) {
         case TK_ARRAY: {
             auto elem_type = desc->element_type();
-            auto new_elem_type = CloneTypeWithRos2(elem_type)->build();
+            auto new_elem_type = cloneTypeWithRos2(elem_type)->build();
             desc->element_type(new_elem_type);
             new_type_builder = factory->create_type(desc);
         } break;
         case TK_SEQUENCE: {
             auto elem_type = desc->element_type();
-            auto new_elem_type = CloneTypeWithRos2(elem_type)->build();
+            auto new_elem_type = cloneTypeWithRos2(elem_type)->build();
             desc->element_type(new_elem_type);
             new_type_builder = factory->create_type(desc);
         } break;
         case TK_MAP: {
             auto key_type = desc->key_element_type();
             auto value_type = desc->element_type();
-            auto new_key_type = CloneTypeWithRos2(key_type)->build();
-            auto new_value_type = CloneTypeWithRos2(value_type)->build();
+            auto new_key_type = cloneTypeWithRos2(key_type)->build();
+            auto new_value_type = cloneTypeWithRos2(value_type)->build();
             desc->key_element_type(new_key_type);
             desc->element_type(new_value_type);
             new_type_builder = factory->create_type(desc);
@@ -176,11 +176,11 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
         case TK_UNION: {
             auto discr_type = desc->discriminator_type();
             if (discr_type->get_kind() != TK_ENUM) {
-                auto new_discr_type = CloneTypeWithRos2(discr_type)->build();
+                auto new_discr_type = cloneTypeWithRos2(discr_type)->build();
                 desc->discriminator_type(new_discr_type);
             }
             // union don't need it
-            // desc->name(ToRos2TypeName(desc->name().c_str()));
+            // desc->name(toRos2TypeName(desc->name().c_str()));
             new_type_builder = factory->create_type(desc);
             auto member_count = type->get_member_count();
             for (decltype(member_count) i = 1; i < member_count; i++) {
@@ -189,7 +189,7 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
                 mem->get_descriptor(mem_desc);
                 if (mem_desc->type()->get_kind() != TK_ENUM) {
-                    auto mem_type = CloneTypeWithRos2(mem_desc->type())->build();
+                    auto mem_type = cloneTypeWithRos2(mem_desc->type())->build();
                     mem_desc->type(mem_type);
                 }
                 new_type_builder->add_member(mem_desc);
@@ -197,7 +197,7 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
 
         } break;
         case TK_STRUCTURE: {
-            desc->name(ToRos2TypeName(desc->name().c_str()));
+            desc->name(toRos2TypeName(desc->name().c_str()));
             new_type_builder = factory->create_type(desc);
             auto member_count = type->get_member_count();
             for (decltype(member_count) i = 0; i < member_count; i++) {
@@ -206,7 +206,7 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
                 mem->get_descriptor(mem_desc);
                 if (mem_desc->type()->get_kind() != TK_ENUM) {
-                    auto mem_type = CloneTypeWithRos2(mem_desc->type())->build();
+                    auto mem_type = cloneTypeWithRos2(mem_desc->type())->build();
                     mem_desc->type(mem_type);
                 }
                 new_type_builder->add_member(mem_desc);
@@ -220,13 +220,13 @@ TypeBuilderRef DdsDynamicFactory::CloneTypeWithRos2(const TypeRef& type) {
     return new_type_builder;
 }
 
-TypeBuilderRef DdsDynamicFactory::ParserTypeFromIdlWithRos2(const std::string& idl_path, const std::string& type_name,
+TypeBuilderRef DdsDynamicFactory::parseTypeFromIdlWithRos2(const std::string& idl_path, const std::string& type_name,
                                                             const std::string& include_dir) {
-    auto type_builder = ParserTypeFromIdl(idl_path, type_name, include_dir);
-    return CloneTypeWithRos2(type_builder->build());
+    auto type_builder = parseTypeFromIdl(idl_path, type_name, include_dir);
+    return cloneTypeWithRos2(type_builder->build());
 }
 
-void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& mem_name, size_t indent, uint32_t id) {
+void DdsDynamicFactory::printTypeInfo(const TypeRef& type, const std::string& mem_name, size_t indent, uint32_t id) {
     auto indent_print = [indent] {
         for (size_t i = 0; i < indent; ++i) {
             fmt::print("\t");
@@ -283,7 +283,7 @@ void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& me
                 indent_print();
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
                 mem->get_descriptor(mem_desc);
-                PrintTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, count);
+                printTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, count);
                 ++count;
             }
         } break;
@@ -303,7 +303,7 @@ void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& me
                 type->get_member(mem, id);
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
                 mem->get_descriptor(mem_desc);
-                PrintTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, id);
+                printTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, id);
             }
             indent_print();
             fmt::print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
@@ -319,7 +319,7 @@ void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& me
                 type->get_member(mem, id);
                 MemberDescriptorRef mem_desc{fdds::dds::traits<DdsMemberDescriptor>::make_shared()};
                 mem->get_descriptor(mem_desc);
-                PrintTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, id);
+                printTypeInfo(mem_desc->type(), mem->get_name().c_str(), indent + 1, id);
             }
             indent_print();
             fmt::print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
@@ -330,19 +330,19 @@ void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& me
         case TK_SEQUENCE: {
             fmt::print("SEQUENCE]\n");
             auto elem_type = desc->element_type();
-            PrintTypeInfo(elem_type, "seq_data", indent + 1);
+            printTypeInfo(elem_type, "seq_data", indent + 1);
         } break;
         case TK_ARRAY: {
             fmt::print("ARRAY]\n");
             auto elem_type = desc->element_type();
-            PrintTypeInfo(elem_type, "arr_data", indent + 1);
+            printTypeInfo(elem_type, "arr_data", indent + 1);
         } break;
         case TK_MAP: {
             fmt::print("MAP]\n");
             auto key_type = desc->key_element_type();
             auto elem_type = desc->element_type();
-            PrintTypeInfo(key_type, "key", indent + 1);
-            PrintTypeInfo(elem_type, "value", indent + 1);
+            printTypeInfo(key_type, "key", indent + 1);
+            printTypeInfo(elem_type, "value", indent + 1);
         } break;
         default:
             fmt::print("UNKNOWN (0x{:X})]\n", static_cast<int>(kind));
@@ -350,19 +350,19 @@ void DdsDynamicFactory::PrintTypeInfo(const TypeRef& type, const std::string& me
     }
 }
 
-std::string DdsDynamicFactory::IdlSerialize(const TypeRef& type) {
+std::string DdsDynamicFactory::idlSerialize(const TypeRef& type) {
     std::stringstream ss;
     fdds::dds::idl_serialize(type, ss);
     return ss.str();
 }
 
-DataRef DdsDynamicFactory::ParseFromJson(const nlohmann::json& data_json, const TypeRef& type) {
+DataRef DdsDynamicFactory::parseFromJson(const nlohmann::json& data_json, const TypeRef& type) {
     DataRef data;
     fdds::dds::json_deserialize(data_json.dump(), type, fdds::dds::DynamicDataJsonFormat::EPROSIMA, data);
     return data;
 }
 
-nlohmann::json DdsDynamicFactory::ToJson(const DataRef& data) {
+nlohmann::json DdsDynamicFactory::toJson(const DataRef& data) {
     std::stringstream json_ss;
     fdds::dds::json_serialize(data, fdds::dds::DynamicDataJsonFormat::EPROSIMA, json_ss);
     nlohmann::json data_json = nlohmann::json::parse(json_ss.str());

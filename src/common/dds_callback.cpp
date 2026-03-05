@@ -1,10 +1,10 @@
-#include "common/dds/dds_callback.hpp"
+#include "jsrcomm/common/dds/dds_callback.hpp"
 
 namespace jsr::common::dds {
-bool DdsReaderCallback::HasMessageHandler() const {
+bool DdsReaderCallback::hasMessageHandler() const {
     return handler_ == nullptr;
 }
-void DdsReaderCallback::OnDataAvailable(const void* data) {
+void DdsReaderCallback::onDataAvailable(const void* data) {
     if (data == nullptr) {
         return;
     }

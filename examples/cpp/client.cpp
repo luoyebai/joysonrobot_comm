@@ -1,26 +1,29 @@
 // STD
 #include <memory>
 // RPC
-#include "robot/rpc/request.hpp"
-#include "robot/rpc/response.hpp"
+#include "jsrcomm/robot/rpc/request.hpp"
+#include "jsrcomm/robot/rpc/response.hpp"
 // RPC CLIENT
-#include "robot/rpc/rpc_client.hpp"
+#include "jsrcomm/robot/rpc/rpc_client.hpp"
 
 constexpr auto SERVER_NAME = "loco";
 
 namespace jrc = jsr::robot::channel;
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto client = std::make_shared<jsr::robot::rpc::RpcClient>();
-    client->Init(SERVER_NAME);
+    client->init(SERVER_NAME);
     size_t frame_count = 0;
     auto last_time = std::chrono::steady_clock::now();
-    jsr::robot::rpc::Request req;
-    jsr::robot::rpc::RequestHeader header;
+    auto req = jsr::robot::rpc::Request();
+    auto header = jsr::robot::rpc::RequestHeader();
 
-    for (size_t i = 0; i < 5000; ++i) {
-        auto api = random() % 16 + 2000;
+    constexpr size_t REQUEST_COUNT = 5000;
+    constexpr size_t API_BASE_SIZE = 2000;
+    constexpr size_t API_SIZE = 16;
+    for (size_t i = 0; i < REQUEST_COUNT; ++i) {
+        auto api = random() % API_SIZE + API_BASE_SIZE;
         header.SetApiId(api);
         req.SetHeader(header);
         req.SetBody("This is a message");
@@ -44,8 +47,8 @@ int main() {
             last_time = now;
         }
     }
-    // Exit
-    auto api = 1999;
+    // 1999: Exit
+    auto api = API_BASE_SIZE - 1;
     header.SetApiId(api);
     req.SetHeader(header);
     req.SetBody("Exit");

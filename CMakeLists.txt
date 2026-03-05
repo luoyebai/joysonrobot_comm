@@ -55,7 +55,8 @@ else()
     add_library(${TARGET_NAME} STATIC ${SOURCES})
 endif()
 
-target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_idl ${LIB_SOURCECS})
+# target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_idl ${LIB_SOURCECS})
+target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_idl ${TARGET_NAME}_proto ${LIB_SOURCECS})
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 
 # ==============
@@ -99,13 +100,9 @@ include(${cmake_path}/genidl.cmake)
 file(GLOB_RECURSE idl_files "${CMAKE_SOURCE_DIR}/idl/*.idl")
 gendds_for_idl(${TARGET_NAME}_idl ${idl_files})
 
-# ================
-# python binding #
-# ================
-if(BUILD_PYTHON_BINDING)
-    include(${cmake_path}/python.cmake)
-    add_python_binding(${TARGET_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/python/binding.cpp" ${PY_INSTALL})
-endif()
+file(GLOB_RECURSE proto_files "${CMAKE_SOURCE_DIR}/proto/*.proto")
+include(${cmake_path}/proto.cmake)
+gendds_for_proto(${TARGET_NAME}_proto ${proto_files})
 
 # ================
 # examples build #
@@ -126,17 +123,28 @@ endif()
 # install #
 # =========
 include(GNUInstallDirs)
+set(CMAKE_INSTALL_PREFIX
+    "/opt/joysonrobot"
+    CACHE PATH "Install path prefix" FORCE)
+
+target_include_directories(
+    ${TARGET_NAME}
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third_party/include>
+           $<INSTALL_INTERFACE:include/${TARGET_NAME}>)
+
 # header
-install(DIRECTORY include/ third_party/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME})
-# lib
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME})
+# third party header
+install(DIRECTORY third_party/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME})
+# target libs
 install(
-    TARGETS ${TARGET_NAME} ${TARGET_NAME}_idl
+    TARGETS ${TARGET_NAME} ${TARGET_NAME}_idl ${TARGET_NAME}_proto
     EXPORT ${TARGET_NAME}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # static
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # dynamic
 )
-
-# Install third_party .so libraries
+# third_party .so libraries
 install(FILES ${LIB_SOURCECS} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # cmake config

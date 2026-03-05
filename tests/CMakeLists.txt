@@ -16,13 +16,16 @@ function(register_tests)
     endforeach()
 endfunction()
 
-add_build_type(test . tests LIBS ${TARGET_NAME} ${TARGET_NAME}_idl SOURCES test_tools/catch_amalgamated.cpp)
+add_build_type(
+    test
+    .
+    tests
+    LIBS
+    ${TARGET_NAME}
+    ${TARGET_NAME}_idl
+    SOURCES
+    test_tools/catch_amalgamated.cpp)
 
-
-set(TEST_EXECUTABLES
-    dds_test
-    dds_dynamic_test
-    fmt_test
-)
+set(TEST_EXECUTABLES unit_tests benchmark_tests)
 
 register_tests(TEST_EXECUTABLES ${TEST_EXECUTABLES} PREFIX ${TARGET_NAME})

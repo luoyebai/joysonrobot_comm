@@ -3,11 +3,10 @@
 #include <memory>
 #include <string>
 #include <thread>
-
 // DYNAMIC
-#include "common/dds/dds_dynamic_factory.hpp"
+#include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // PUB
-#include "robot/channel/channel_publisher.hpp"
+#include "jsrcomm/robot/channel/channel_publisher.hpp"
 
 constexpr auto TOPIC = "rt/low_state";
 
@@ -15,12 +14,12 @@ namespace jrc = jsr::robot::channel;
 namespace jcd = jsr::common::dds;
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto lowstate_type_builder =
-        jcd::DdsDynamicFactory::ParserTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
+        jcd::DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
     auto lowstate_type = lowstate_type_builder->build();
     auto pub = std::make_unique<jrc::ChannelPublisher<jcd::DdsDynamicData>>(TOPIC, lowstate_type_builder);
-    pub->InitChannel();
+    pub->initChannel();
 
     auto motor_json = nlohmann::json{{"mode", 1},
                                      {"q", 0.1},
@@ -42,19 +41,22 @@ int main() {
                        {"motor_state_parallel", nlohmann::json::array()},
                        {"motor_state_serial", nlohmann::json::array()}};
 
-    for (int i = 0; i < 23; ++i) {
+    constexpr size_t MOTOR_NUM = 23;
+    for (int i = 0; i < MOTOR_NUM; ++i) {
         data_json["motor_state_parallel"].push_back(motor_json);
         data_json["motor_state_serial"].push_back(motor_json);
     }
 
-    for (size_t i = 0; i < 1000; ++i) {
-        auto data = jcd::DdsDynamicFactory::ParseFromJson(data_json, lowstate_type);
-        pub->Write(&data);
-        fmt::print("Pub | {} | : Write message\n", pub->GetChannelName());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    constexpr size_t MSG_NUM = 1000;
+    constexpr size_t SLEEP_TIME = 1;  // seconds
+    for (size_t i = 0; i < MSG_NUM; ++i) {
+        auto data = jcd::DdsDynamicFactory::parseFromJson(data_json, lowstate_type);
+        pub->write(&data);
+        fmt::print("Pub | {} | : Write message\n", pub->getChannelName());
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
 
-    pub->CloseChannel();
+    pub->closeChannel();
 
     return 0;
 }

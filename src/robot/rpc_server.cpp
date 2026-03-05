@@ -1,28 +1,31 @@
 // STD
 #include <cstdint>
 // ROBOT RPC SERVER
-#include "robot/rpc/rpc_server.hpp"
+#include "jsrcomm/robot/rpc/rpc_server.hpp"
 // ROBOT CHANNEL
-#include "robot/channel/channel_publisher.hpp"
-#include "robot/channel/channel_subscriber.hpp"
+#include "jsrcomm/robot/channel/channel_publisher.hpp"
+#include "jsrcomm/robot/channel/channel_subscriber.hpp"
 // ROBOT RPC
-#include "robot/rpc/error.hpp"
-#include "robot/rpc/request.hpp"
-#include "robot/rpc/response.hpp"
+#include "jsrcomm/robot/rpc/error.hpp"
+#include "jsrcomm/robot/rpc/request.hpp"
+#include "jsrcomm/robot/rpc/response.hpp"
 
 using namespace jsr::msg;
 
 namespace jsr::robot::rpc {
-void RpcServer::Init(const std::string& channel_name) {
-    channel_publisher_ = std::make_shared<jr::channel::ChannelPublisher<RpcRespMsg>>(channel_name + "/response");
-    channel_publisher_->InitChannel();
-    channel_subscriber_ = std::make_shared<jr::channel::ChannelSubscriber<RpcReqMsg>>(channel_name + "/request");
-    channel_subscriber_->InitChannel([this](const void* msg) { this->DdsReqMsgHandler(msg); });
+
+void RpcServer::init(const std::string& channel_name) {
+    channel_publisher_ =
+        std::make_shared<jr::channel::ChannelPublisher<RpcRespMsg>>(channel_name + RPC_RESPONSE_CHANNEL_SUFFIX);
+    channel_publisher_->initChannel();
+    channel_subscriber_ =
+        std::make_shared<jr::channel::ChannelSubscriber<RpcReqMsg>>(channel_name + RPC_REQUEST_CHANNEL_SUFFIX);
+    channel_subscriber_->initChannel([this](const void* msg) { this->DdsReqMsgHandler(msg); });
     return;
 }
 void RpcServer::Stop() {
-    channel_publisher_->CloseChannel();
-    channel_subscriber_->CloseChannel();
+    channel_publisher_->closeChannel();
+    channel_subscriber_->closeChannel();
     return;
 }
 
@@ -49,12 +52,12 @@ void RpcServer::DdsReqMsgHandler(const void* msg) {
     return;
 }
 
-int32_t RpcServer::SendResponse(const uint64_t uuid, const Response& resp) {
+int64_t RpcServer::SendResponse(const uint64_t uuid, const Response& resp) {
     RpcRespMsg rpc_resp_msg;
     rpc_resp_msg.uuid(uuid);
-    rpc_resp_msg.header(resp.GetHeader().ToJson().dump());
+    rpc_resp_msg.header(resp.GetHeader().toJson().dump());
     rpc_resp_msg.body(resp.GetBody());
-    return static_cast<int32_t>(channel_publisher_->Write(&rpc_resp_msg));
+    return channel_publisher_->write(&rpc_resp_msg);
 }
 
 }  // namespace jsr::robot::rpc

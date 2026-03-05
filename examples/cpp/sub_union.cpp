@@ -4,9 +4,9 @@
 #include <string>
 #include <thread>
 // IDL
-#include "idl/SensorTest.hpp"
+#include "jsrcomm/idl/SensorTest.hpp"
 // SUB
-#include "robot/channel/channel_subscriber.hpp"
+#include "jsrcomm/robot/channel/channel_subscriber.hpp"
 
 constexpr auto TOPIC = "union_test";
 
@@ -33,13 +33,16 @@ void Handler(const void* msg_ptr) {
 }
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto sub = std::make_unique<jrc::ChannelSubscriber<test::Sensor>>(TOPIC, Handler);
-    sub->InitChannel();
-    for (size_t i = 0; i < 1000; ++i) {
-        fmt::print("Sub | {} :Sleep 1 second\n", sub->GetChannelName());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    sub->initChannel();
+
+    constexpr size_t SLEEP_COUNT = 1000;
+    constexpr size_t SLEEP_TIME = 1;  // seconds
+    for (size_t i = 0; i < SLEEP_COUNT; ++i) {
+        fmt::print("Sub | {} :Sleep 1 second\n", sub->getChannelName());
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
-    sub->CloseChannel();
+    sub->closeChannel();
     return 0;
 }

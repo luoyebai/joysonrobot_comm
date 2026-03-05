@@ -1,30 +1,28 @@
 // STD
 #include <random>
 // ROBOT RPC CLIENT
-#include "robot/rpc/rpc_client.hpp"
+#include "jsrcomm/robot/rpc/rpc_client.hpp"
 // ROBOT CHANNEL
-#include "robot/channel/channel_publisher.hpp"
-#include "robot/channel/channel_subscriber.hpp"
+#include "jsrcomm/robot/channel/channel_publisher.hpp"
+#include "jsrcomm/robot/channel/channel_subscriber.hpp"
 // ROBOT RPC
-#include "robot/rpc/error.hpp"
-#include "robot/rpc/request.hpp"
-#include "robot/rpc/response.hpp"
+#include "jsrcomm/robot/rpc/error.hpp"
+#include "jsrcomm/robot/rpc/request.hpp"
+#include "jsrcomm/robot/rpc/response.hpp"
 
 using namespace jsr::msg;
 
 namespace jsr::robot::rpc {
 
 constexpr static size_t MAP_RESERVE_INIT = 1024;
-constexpr static auto RPC_REQUEST_CHANNEL_SUFFIX = "/request";
-constexpr static auto RPC_RESPONSE_CHANNEL_SUFFIX = "/response";
 
-void RpcClient::Init(const std::string& channel_name) {
+void RpcClient::init(const std::string& channel_name) {
     channel_publisher_ =
         std::make_shared<jr::channel::ChannelPublisher<RpcReqMsg>>(channel_name + RPC_REQUEST_CHANNEL_SUFFIX);
     channel_subscriber_ =
         std::make_shared<jr::channel::ChannelSubscriber<RpcRespMsg>>(channel_name + RPC_RESPONSE_CHANNEL_SUFFIX);
-    channel_publisher_->InitChannel();
-    channel_subscriber_->InitChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
+    channel_publisher_->initChannel();
+    channel_subscriber_->initChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
 
     resp_map_.reserve(MAP_RESERVE_INIT);
     async_cb_map_.reserve(MAP_RESERVE_INIT);
@@ -43,44 +41,64 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
     // send
     Response resp;
     RpcReqMsg req_msg;
-    req_msg.header(req.GetHeader().ToJson().dump());
+    req_msg.header(req.GetHeader().toJson().dump());
     req_msg.body(req.GetBody());
     req_msg.uuid(uuid);
-    channel_publisher_->Write(&req_msg);
+    channel_publisher_->write(&req_msg);
 
     // get response
     auto future = entry->prom.get_future();
     // wait for response
-    if (future.wait_for(std::chrono::milliseconds(timeout_ms)) == std::future_status::timeout) {
-        // timeout
-        resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
-    } else {
-        resp = future.get();
+    const auto status = future.wait_for(std::chrono::milliseconds(timeout_ms));
+    switch (status) {
+        case std::future_status::ready:
+            resp = future.get();
+            break;
+        case std::future_status::timeout:
+            resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
+            break;
+        case std::future_status::deferred:
+            resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
+            break;
     }
 
     switch (resp.GetHeader().GetStatus()) {
         case jr::rpc::RPC_STATUS_CODE_SUCCESS:
             break;
         case jr::rpc::RPC_STATUS_CODE_TIMEOUT:
-            fmt::print(stderr, "Rpc client response timeout\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response timeout\n");
+            }
             break;
         case jr::rpc::RPC_STATUS_CODE_BAD_REQUEST:
-            fmt::print(stderr, "Rpc client response code bad\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response code bad\n");
+            }
             break;
         case jr::rpc::RPC_STATUS_CODE_INTERNAL_SERVER_ERROR:
-            fmt::print(stderr, "Rpc client response internal server error\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response internal server error\n");
+            }
             break;
         case jr::rpc::RPC_STATUS_CODE_SERVER_REFUSED:
-            fmt::print(stderr, "Rpc client response server refused\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response server refused\n");
+            }
             break;
         case jr::rpc::RPC_STATUS_CODE_STATE_TRANSITION_FAILED:
-            fmt::print(stderr, "Rpc client response transition failed\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response transition failed\n");
+            }
             break;
         case jr::rpc::RPC_STATUS_CODE_INVALID:
-            fmt::print(stderr, "Rpc client response code invalid\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response code invalid\n");
+            }
             break;
         default:
-            fmt::print(stderr, "Rpc client response code unknown\n");
+            if constexpr (JSR_DDS_RPC_PRINT_EXCEPTION) {
+                fmt::print(stderr, "Rpc client response code unknown\n");
+            }
             break;
     }
 
@@ -96,20 +114,20 @@ void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Respo
     const auto uuid = GenUuid();
     // lock map
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(async_mutex_);
         async_cb_map_[uuid] = std::move(cb);
     }
     // send
     RpcReqMsg msg;
     msg.uuid(uuid);
-    msg.header(req.GetHeader().ToJson().dump());
+    msg.header(req.GetHeader().toJson().dump());
     msg.body(req.GetBody());
-    channel_publisher_->Write(&msg);
+    channel_publisher_->write(&msg);
 }
 
 void RpcClient::Stop() {
-    channel_publisher_->CloseChannel();
-    channel_subscriber_->CloseChannel();
+    channel_publisher_->closeChannel();
+    channel_subscriber_->closeChannel();
     return;
 }
 
@@ -121,7 +139,6 @@ uint64_t RpcClient::GenUuid() {
 
 void RpcClient::DdsSubMsgHandler(const void* msg) {
     const auto* resp_msg = static_cast<const RpcRespMsg*>(msg);
-    // const std::string& uuid = resp_msg->uuid();
     const auto uuid = resp_msg->uuid();
     ResponseHeader header;
     std::string body;
@@ -153,7 +170,7 @@ void RpcClient::DdsSubMsgHandler(const void* msg) {
 
     // async callback
     {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<std::mutex> lock(async_mutex_);
         auto it = async_cb_map_.find(uuid);
         if (it != async_cb_map_.end()) {
             auto cb = it->second;

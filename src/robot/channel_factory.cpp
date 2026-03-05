@@ -1,12 +1,12 @@
 // DDS
-#include "robot/channel/channel_factory.hpp"
+#include "jsrcomm/robot/channel/channel_factory.hpp"
 
 namespace jsr::robot::channel {
 
-void ChannelFactory::Init(int32_t domain_id, const std::string& network_interface) {
+void ChannelFactory::init(int32_t domain_id, const std::string& network_interface) {
     if (!initialized_) {
         dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
-        dds_factory_model_->Init(domain_id, network_interface);
+        dds_factory_model_->init(domain_id, network_interface);
         initialized_ = true;
         return;
     }
@@ -14,27 +14,27 @@ void ChannelFactory::Init(int32_t domain_id, const std::string& network_interfac
     return;
 }
 
-void ChannelFactory::Init(const nlohmann::json& config) {
+void ChannelFactory::init(const nlohmann::json& config) {
     if (!initialized_) {
         dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
-        dds_factory_model_->Init(config);
+        dds_factory_model_->init(config);
         return;
     }
     fmt::print(stderr, "ChannelFactory has already been initialized\n");
     return;
 }
 
-void ChannelFactory::CloseWriter(const std::string& channel_name) {
+void ChannelFactory::closeWriter(const std::string& channel_name) {
     std::lock_guard<std::mutex> lock(mutex_);
-    dds_factory_model_->CloseWriter(channel_name);
+    dds_factory_model_->closeWriter(channel_name);
 }
-void ChannelFactory::CloseReader(const std::string& channel_name) {
+void ChannelFactory::closeReader(const std::string& channel_name) {
     std::lock_guard<std::mutex> lock(mutex_);
-    dds_factory_model_->CloseReader(channel_name);
+    dds_factory_model_->closeReader(channel_name);
 }
-void ChannelFactory::CloseTopic(const TopicPtr& topic) {
+void ChannelFactory::closeTopic(const TopicPtr& topic) {
     std::lock_guard<std::mutex> lock(mutex_);
-    dds_factory_model_->CloseTopic(topic);
+    dds_factory_model_->closeTopic(topic);
 }
 
 }  // namespace jsr::robot::channel

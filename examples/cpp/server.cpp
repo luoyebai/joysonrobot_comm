@@ -1,12 +1,12 @@
 // STD
 #include <memory>
 // RPC
-#include "robot/rpc/error.hpp"
-#include "robot/rpc/request.hpp"
-#include "robot/rpc/response.hpp"
+#include "jsrcomm/robot/rpc/error.hpp"
+#include "jsrcomm/robot/rpc/request.hpp"
+#include "jsrcomm/robot/rpc/response.hpp"
 // RPC SERVER
-#include "robot/rpc/rpc_client.hpp"
-#include "robot/rpc/rpc_server.hpp"
+#include "jsrcomm/robot/rpc/rpc_client.hpp"
+#include "jsrcomm/robot/rpc/rpc_server.hpp"
 
 namespace jrc = jsr::robot::channel;
 namespace jrr = jsr::robot::rpc;
@@ -35,6 +35,8 @@ class Server : public jrr::RpcServer {
    public:
     Server() = default;
     ~Server() = default;
+
+    std::atomic_flag stopped = ATOMIC_FLAG_INIT;
 
    private:
     jrr::Response HandleRequest(jrr::Request& request) override {
@@ -104,20 +106,28 @@ class Server : public jrr::RpcServer {
                 response.SetBody("Get unknown request");
         }
         fmt::print("[Server]| Get Request with api id={},body={}\n", api_id, response.GetBody());
-        if (api_id == 1999) {
-            _Exit(0);
+        if (api_id == static_cast<size_t>(ApiId::Exit)) {
+            stopped.test_and_set();
         }
         return response;
     }
 };
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto server = std::make_shared<Server>();
-    server->Init(SERVER_NAME);
+    server->init(SERVER_NAME);
     // The server will run for 100 seconds
-    for (size_t i = 0; i < 100; ++i) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    constexpr size_t SLEEP_COUNT = 100;
+    constexpr size_t SLEEP_TIME = 1;  // seconds
+    for (size_t i = 0; i < SLEEP_COUNT; ++i) {
+        if (server->stopped._M_i) {
+            fmt::print("[Server] | Stoped...\n");
+            server->Stop();
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
+        fmt::print("[Server] | Running...\n");
     }
     fmt::print("[Server] | Process Over!\n");
 }

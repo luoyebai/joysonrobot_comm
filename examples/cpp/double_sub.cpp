@@ -4,8 +4,8 @@
 #include <string>
 #include <thread>
 // SUB
-#include "idl/RpcReqMsg.hpp"
-#include "robot/channel/channel_subscriber.hpp"
+#include "jsrcomm/idl/RpcReqMsg.hpp"
+#include "jsrcomm/robot/channel/channel_subscriber.hpp"
 
 constexpr auto LR_LOCO_TOPIC = "rt/lr/loco_ctrl";
 
@@ -25,16 +25,17 @@ void HandlerT2(const void* msg_ptr) {
 }
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     jrc::ChannelSubscriber<RpcReqMsg> sub1(LR_LOCO_TOPIC, HandlerT1);
     jrc::ChannelSubscriber<RpcReqMsg> sub2(LR_LOCO_TOPIC, HandlerT2);
-    sub1.InitChannel();
-    sub2.InitChannel();
+    sub1.initChannel();
+    sub2.initChannel();
 
     // Wait 10 sec
-    for (size_t i = 0; i < 10; ++i) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    constexpr size_t SLEEP_COUNT = 10;
+    constexpr size_t SLEEP_TIME = 1;
+    for (size_t i = 0; i < SLEEP_COUNT; ++i) {
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
-
     return 0;
 }

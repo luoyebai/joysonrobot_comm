@@ -21,7 +21,6 @@ Checks: "*,
   -clang-analyzer-cplusplus.NewDeleteLeaks,
   -clang-analyzer-cplusplus.Move,
   -clang-diagnostic-unused-parameter,
-  -cppcoreguidelines-*,
   cppcoreguidelines-explicit-virtual-functions,
   cppcoreguidelines-special-member-functions,
   -cert-err58-cpp,
@@ -76,31 +75,76 @@ Checks: "*,
   -bugprone-narrowing-conversions"
 
 CheckOptions:
+  # struct：大驼峰
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  # class：大驼峰
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
+  # Enum 变量：大写下划线
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
-  - key: readability-identifier-naming.LocalVariableCase
+  # 全局变量：大写下划线
+  - key: readability-identifier-naming.GlobalVariableCase
     value: lower_case
+  # Static 常量：无限制
   - key: readability-identifier-naming.StaticConstantCase
     value: aNy_CasE
+  # Constexpr 变量：大写下划线
   - key: readability-identifier-naming.ConstexprVariableCase
     value: UPPER_CASE
+  # 局部变量：小写下划线
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+  # Public 变量：小写下划线
+  - key: readability-identifier-naming.PublicMemberCase
+    value: lower_case
+  # Private 变量：小写下划线  后缀 _
+  # Protected 变量：小写下划线  后缀 _
   - key: readability-identifier-naming.PrivateMemberCase
     value: lower_case
   - key: readability-identifier-naming.PrivateMemberSuffix
     value: _
-  - key: readability-identifier-naming.ProtectedMethodCase
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: _
+  # 函数：大驼峰
+  - key: readability-identifier-naming.FunctionCase
     value: CamelCase
+  # Public 方法：小驼峰
+  - key: readability-identifier-naming.PublicMethodCase
+    value: camelBack
+  # Protected 方法：小驼峰
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: camelBack
+  # Private 方法：小驼峰
+  - key: readability-identifier-naming.PrivateMethodCase
+    value: camelBack
+  # 函数参数：小写下划线
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  # 命名空间：小写下划线
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  # 模板参数：大驼峰
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  # 宏定义：大写下划线
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+  # 2行以内的“单条语句”可以不强制加花括号 {}
   - key: readability-braces-around-statements.ShortStatementLines
     value: 2
   - key: readability-uppercase-literal-suffix.NewSuffixes
     value: "f;u;ul"
-  # Ignore GoogleTest function macros.
+  # 忽略谷歌生成宏函数
   - key: readability-identifier-naming.FunctionIgnoredRegexp
     value: "(TEST|TEST_F|TEST_P|INSTANTIATE_TEST_SUITE_P|MOCK_METHOD|TYPED_TEST)"
+    # 允许对 trivially copyable 类型 move
   - key: performance-move-const-arg.CheckTriviallyCopyableMove
     value: 0
+  # 特殊成员函数宽松策略
   - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value: 1
   - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions

@@ -4,9 +4,9 @@
 #include <string>
 #include <thread>
 // DYNAMIC
-#include "common/dds/dds_dynamic_factory.hpp"
+#include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // PUB
-#include "robot/channel/channel_publisher.hpp"
+#include "jsrcomm/robot/channel/channel_publisher.hpp"
 
 constexpr auto TOPIC = "union_test";
 
@@ -14,14 +14,17 @@ namespace jrc = jsr::robot::channel;
 namespace jcd = jsr::common::dds;
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto sensor_type_builder =
-        jcd::DdsDynamicFactory::ParserTypeFromIdlWithRos2("../../idl/SensorTest.idl", "test::Sensor", "../../idl/");
+        jcd::DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/SensorTest.idl", "test::Sensor", "../../idl/");
     auto sensor_type = sensor_type_builder->build();
 
     auto pub = std::make_unique<jrc::ChannelPublisher<jcd::DdsDynamicData>>(TOPIC, sensor_type_builder);
-    pub->InitChannel();
-    for (size_t i = 0; i < 1000; ++i) {
+    pub->initChannel();
+
+    constexpr size_t MSG_NUMS = 1000;
+    constexpr size_t SLEEP_TIME = 1;  // seconds
+    for (size_t i = 0; i < MSG_NUMS; ++i) {
         auto j = nlohmann::json{};
         switch (i % 3) {
             case 0: {
@@ -34,12 +37,12 @@ int main() {
                 j = {{"id", "abcde"}, {"data", {{"power", 200}}}};
             } break;
         }
-        auto msg = jcd::DdsDynamicFactory::ParseFromJson(j, sensor_type);
-        pub->Write(&msg);
+        auto msg = jcd::DdsDynamicFactory::parseFromJson(j, sensor_type);
+        pub->write(&msg);
 
-        fmt::print("Pub | {} | : Write message\n", pub->GetChannelName());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        fmt::print("Pub | {} | : Write message\n", pub->getChannelName());
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
-    pub->CloseChannel();
+    pub->closeChannel();
     return 0;
 }

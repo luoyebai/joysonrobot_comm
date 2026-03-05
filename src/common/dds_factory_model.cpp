@@ -3,11 +3,11 @@
 #include <memory>
 // JSON
 #include "serialization/json.hpp"
-// DDS
-#include "common/dds/dds_factory_model.hpp"
 // FASTDDS
 #include "fastdds/dds/domain/DomainParticipant.hpp"
 #include "fastdds/dds/domain/DomainParticipantFactory.hpp"
+// DDS
+#include "jsrcomm/common/dds/dds_factory_model.hpp"
 
 namespace jsr::common::dds {
 
@@ -20,12 +20,10 @@ DdsFactoryModel::DdsFactoryModel()
       subscriber_qos_(DDS_SUBSCRIBER_QOS_DEFAULT),
       writer_qos_(DDS_DATAWRITER_QOS_DEFAULT),
       reader_qos_(DDS_DATAREADER_QOS_DEFAULT) {
-    writer_qos_.data_sharing().automatic();
-    reader_qos_.data_sharing().automatic();
     return;
 }
 
-void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interface) {
+void DdsFactoryModel::init(int32_t domain_id, const std::string& network_interface) {
     if (!network_interface.empty()) {
         // Create a descriptor for the new transport.
         auto udp_transport = std::make_shared<DdsUDPv4TransportDescriptor>();
@@ -43,7 +41,7 @@ void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interfa
         throw std::runtime_error("Failed to create DomainParticipant.");
         return;
     }
-    // Init publisher
+    // init publisher
     DdsPublisher* raw_publisher = participant_->create_publisher(publisher_qos_, nullptr);
     publisher_ = DdsPublisherPtr(raw_publisher, [](DdsPublisher*) {});
     if (!publisher_) {
@@ -51,7 +49,7 @@ void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interfa
         return;
     }
 
-    // Init subscriber
+    // init subscriber
     DdsSubscriber* raw_subscriber = participant_->create_subscriber(subscriber_qos_, nullptr);
     subscriber_ = DdsSubscriberPtr(raw_subscriber, [](DdsSubscriber*) {});
 
@@ -61,14 +59,14 @@ void DdsFactoryModel::Init(int32_t domain_id, const std::string& network_interfa
     }
 }
 
-void DdsFactoryModel::Init(const nlohmann::json& config) {
+void DdsFactoryModel::init(const nlohmann::json& config) {
     if (config.empty()) {
         throw std::runtime_error("DdsFactoryModel config is empty");
         return;
     }
     int32_t domain_id = config.value("domain_id", 0);
     std::string network_interface = config.value("network_interface", "");
-    this->Init(domain_id, network_interface);
+    this->init(domain_id, network_interface);
 }
 
 }  // namespace jsr::common::dds

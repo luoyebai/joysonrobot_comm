@@ -12,14 +12,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Use installed path
-set(jsrcomm_installed_path /usr/local/)
-include_directories(BEFORE "${jsrcomm_installed_path}/include/jsrcomm")
-set(libs "${jsrcomm_installed_path}/lib/libjsrcomm.a" "${jsrcomm_installed_path}/lib/libjsrcomm_idl.a"
-         "${jsrcomm_installed_path}/lib/libfastdds.so" "${jsrcomm_installed_path}/lib/libfastcdr.so")
+set(joysonrobot_installed_path /opt/joysonrobot)
+list(APPEND CMAKE_PREFIX_PATH ${joysonrobot_installed_path})
+find_package(Protobuf REQUIRED)
+find_package(jsrcomm REQUIRED)
 
 file(GLOB examples "${CMAKE_SOURCE_DIR}/cpp/*.cpp")
 foreach(example ${examples})
     get_filename_component(example_name ${example} NAME_WE)
     add_executable(${example_name} ${example})
-    target_link_libraries(${example_name} PRIVATE ${libs})
+    target_include_directories(${example_name} PRIVATE ${jsrcomm_INCLUDE_DIRS})
+    target_link_libraries(${example_name} PRIVATE ${libs} jsrcomm::jsrcomm jsrcomm::jsrcomm_idl jsrcomm::jsrcomm_proto)
 endforeach()

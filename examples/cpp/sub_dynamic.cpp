@@ -4,9 +4,9 @@
 #include <string>
 #include <thread>
 // DYNAMIC
-#include "common/dds/dds_dynamic_factory.hpp"
+#include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // SUB
-#include "robot/channel/channel_subscriber.hpp"
+#include "jsrcomm/robot/channel/channel_subscriber.hpp"
 
 constexpr auto TOPIC = "rt/low_state";
 
@@ -46,7 +46,8 @@ void SubHandle(const void* msg) {
 
     auto motor_f = [](jcd::DdsDynamicData::_ref_type& motor_seq, const std::string& name) {
         fmt::print("{}:\n\t", name);
-        for (size_t i = 0; i < 23; ++i) {
+        constexpr size_t MOTOR_NUMS = 23;
+        for (size_t i = 0; i < MOTOR_NUMS; ++i) {
             auto motor_data = motor_seq->loan_value(i);
             uint8_t mode{}, temp{};
             float q{}, dq{}, ddq{}, tau_est{};
@@ -80,24 +81,26 @@ void SubHandle(const void* msg) {
 }
 
 int main() {
-    jrc::ChannelFactory::Instance()->Init(0);
+    jrc::ChannelFactory::instance()->init(0);
     auto lowstate_type_builder =
-        // jcd::DdsDynamicFactory::ParserTypeFromIdl("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
-        jcd::DdsDynamicFactory::ParserTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
+        // jcd::DdsDynamicFactory::parseTypeFromIdl("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
+        jcd::DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
 
     auto lowstate_type = lowstate_type_builder->build();
-    jcd::DdsDynamicFactory::PrintTypeInfo(lowstate_type);
+    jcd::DdsDynamicFactory::printTypeInfo(lowstate_type);
 
     auto sub = std::make_unique<jrc::ChannelSubscriber<jcd::DdsDynamicData>>(TOPIC, lowstate_type_builder, SubHandle);
 
-    sub->InitChannel();
+    sub->initChannel();
 
-    for (size_t i = 0; i < 1000; ++i) {
-        fmt::print("Sub | {} :Sleep 1 second\n", sub->GetChannelName());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    constexpr size_t SLEEP_COUNT = 1000;
+    constexpr size_t SLEEP_TIME = 1;  // seconds
+    for (size_t i = 0; i < SLEEP_COUNT; ++i) {
+        fmt::print("Sub | {} :Sleep 1 second\n", sub->getChannelName());
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
 
-    sub->CloseChannel();
+    sub->closeChannel();
 
     return 0;
 }
