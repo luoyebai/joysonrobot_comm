@@ -22,7 +22,7 @@ void RpcClient::init(const std::string& channel_name) {
     channel_subscriber_ =
         std::make_shared<jr::channel::ChannelSubscriber<RpcRespMsg>>(channel_name + RPC_RESPONSE_CHANNEL_SUFFIX);
     channel_publisher_->initChannel();
-    channel_subscriber_->initChannel([this](const void* msg) { this->DdsSubMsgHandler(msg); });
+    channel_subscriber_->initChannel([this](const void* msg) { this->ddsSubMsgHandler(msg); });
 
     resp_map_.reserve(MAP_RESERVE_INIT);
     async_cb_map_.reserve(MAP_RESERVE_INIT);
@@ -30,8 +30,8 @@ void RpcClient::init(const std::string& channel_name) {
     return;
 }
 
-Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
-    const auto uuid = this->GenUuid();
+Response RpcClient::sendApiRequest(const Request& req, int64_t timeout_ms) {
+    const auto uuid = this->genUuid();
     auto entry = std::make_shared<SyncEntry>();
     // lock map
     {
@@ -110,8 +110,8 @@ Response RpcClient::SendApiRequest(const Request& req, int64_t timeout_ms) {
     return resp;
 }
 
-void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Response)> cb) {
-    const auto uuid = GenUuid();
+void RpcClient::sendApiRequestAsync(const Request& req, std::function<void(Response)> cb) {
+    const auto uuid = genUuid();
     // lock map
     {
         std::lock_guard<std::mutex> lock(async_mutex_);
@@ -125,19 +125,19 @@ void RpcClient::SendApiRequestAsync(const Request& req, std::function<void(Respo
     channel_publisher_->write(&msg);
 }
 
-void RpcClient::Stop() {
+void RpcClient::stop() {
     channel_publisher_->closeChannel();
     channel_subscriber_->closeChannel();
     return;
 }
 
-uint64_t RpcClient::GenUuid() {
+uint64_t RpcClient::genUuid() {
     static thread_local std::mt19937_64 rng(std::random_device{}());
     static std::uniform_int_distribution<uint64_t> dist;
     return dist(rng);
 }
 
-void RpcClient::DdsSubMsgHandler(const void* msg) {
+void RpcClient::ddsSubMsgHandler(const void* msg) {
     const auto* resp_msg = static_cast<const RpcRespMsg*>(msg);
     const auto uuid = resp_msg->uuid();
     ResponseHeader header;

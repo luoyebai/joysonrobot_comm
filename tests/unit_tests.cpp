@@ -78,7 +78,7 @@ class LocoServer : public jrr::RpcServer {
    public:
     LocoServer() = default;
     ~LocoServer() = default;
-    jrr::Response HandleRequest(jrr::Request& request) override {
+    jrr::Response handleRequest(jrr::Request& request) override {
         auto response = jrr::Response();
         response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
         response.SetBody(request.MoveBody());
@@ -99,35 +99,41 @@ TEST_CASE("Rpc Client/Server communication test cases", "[DDS][RPC]") {
     client->init(LOCO_RPC_NAME);
     auto req = jrr::Request(jrr::RequestHeader(api_id), std::string(8000, 'X'));
     for (size_t i = 0; i < TEST_COUNT; ++i) {
-        auto resp = client->SendApiRequest(req);
+        auto resp = client->sendApiRequest(req);
         REQUIRE(IsRequestOk(req, resp));
     }
-    client->Stop();
-    server->Stop();
+    client->stop();
+    server->stop();
 }
 
 /**
- * @brief Test DDS communication MockServer, Don't use Stop function in the HandleRequest function
+ * @brief Test DDS communication MockServer, Don't use stop function in the handleRequest function
  * You should use atomic_bool to stop the server
  *
  */
 class MockServer : public jrr::RpcServer {
    public:
+    MockServer() {
+        this->registerApi(0,
+                          [this](const jrr::Request& req) {
+                              auto response = jrr::Response();
+                              response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
+                              stopped.test_and_set();
+                              return response;
+                          })
+            ->registerApi(1, [this](const jrr::Request& req) {
+                auto response = jrr::Response();
+                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SERVER_REFUSED));
+                return response;
+            });
+    }
     std::atomic_flag stopped = ATOMIC_FLAG_INIT;
 
    private:
-    jrr::Response HandleRequest(jrr::Request& request) override {
+    jrr::Response handleRequest(jrr::Request& request) override {
         auto api_id = request.GetHeader().GetApiId();
         auto response = jrr::Response();
-        switch (api_id) {
-            case 0:
-                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
-                stopped.test_and_set();
-                break;
-            default:
-                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SERVER_REFUSED));
-                break;
-        }
+        response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_BAD_REQUEST));
         return response;
     }
 };
@@ -139,14 +145,20 @@ TEST_CASE("Rpc Client/Server communication test cases with timeout", "[DDS][RPC]
     client->init("TimeoutTest");
     int64_t status = -1;
     auto req = jrr::Request(jrr::RequestHeader(0), "");
-    status = client->SendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).GetHeader().GetStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_SUCCESS);
+    req = jrr::Request(jrr::RequestHeader(1), "");
+    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    REQUIRE(status == jrr::RPC_STATUS_CODE_SERVER_REFUSED);
+    req = jrr::Request(jrr::RequestHeader(2), "");
+    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    REQUIRE(status == jrr::RPC_STATUS_CODE_BAD_REQUEST);
     if (server->stopped._M_i) {
-        server->Stop();
+        server->stop();
     }
-    status = client->SendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).GetHeader().GetStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_TIMEOUT);
-    client->Stop();
+    client->stop();
 }
 
 TEST_CASE("Rpc Client/Server communication aysnc test cases", "[DDS][RPC][ASYNC]") {
@@ -159,7 +171,7 @@ TEST_CASE("Rpc Client/Server communication aysnc test cases", "[DDS][RPC][ASYNC]
 
     std::atomic<size_t> done_count{0};
     for (size_t i = 0; i < TEST_COUNT; ++i) {
-        client->SendApiRequestAsync(req, [&](const jrr::Response& resp) {
+        client->sendApiRequestAsync(req, [&](const jrr::Response& resp) {
             REQUIRE(IsRequestOk(req, resp));
             done_count.fetch_add(1, std::memory_order_relaxed);
             return;
@@ -553,7 +565,7 @@ template <class Greeter>
 class GreeterClient {
    public:
     using ServiceObject = Greeter;
-    using Wrapper = jsr::rpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
+    using Wrapper = jsr::grpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
     explicit GreeterClient(std::shared_ptr<Channel> channel) : wrapper_(std::make_unique<Wrapper>(channel)) {}
     GreeterClient(const GreeterClient&) = delete;
     GreeterClient& operator=(const GreeterClient&) = delete;
@@ -675,7 +687,7 @@ TEST_CASE("gRPC one service test", "[GRPC]") {
 
     auto service = GreeterServiceImpl<Greeter1>();
 
-    auto server = jsr::rpc::CreateServer(port, service);
+    auto server = jsr::grpc::CreateServer(port, service);
     auto channel = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
 
     // wait for server to start
@@ -709,7 +721,7 @@ TEST_CASE("gRPC multi service test", "[GRPC]") {
     auto service1 = GreeterServiceImpl<Greeter1>();
     auto service2 = GreeterServiceImpl<Greeter2>();
 
-    auto server = jsr::rpc::CreateServers(port, service1, service2);
+    auto server = jsr::grpc::CreateServers(port, service1, service2);
 
     auto channel = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
     channel->WaitForConnected(std::chrono::system_clock::now() + std::chrono::seconds(3));

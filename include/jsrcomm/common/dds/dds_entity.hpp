@@ -28,6 +28,9 @@
 #include "fastdds/dds/domain/DomainParticipantFactory.hpp"
 #include "fastdds/dds/publisher/DataWriter.hpp"
 #include "fastdds/dds/publisher/Publisher.hpp"
+// #include "fastdds/dds/rpc/Replier.hpp"
+// #include "fastdds/dds/rpc/RequestInfo.hpp"
+// #include "fastdds/dds/rpc/Service.hpp"
 #include "fastdds/dds/subscriber/DataReader.hpp"
 #include "fastdds/dds/subscriber/DataReaderListener.hpp"
 #include "fastdds/dds/subscriber/SampleInfo.hpp"
@@ -57,7 +60,10 @@ using DdsSubscriber = fdds::dds::Subscriber;
 using DdsWriter = fdds::dds::DataWriter;
 using DdsReader = fdds::dds::DataReader;
 using DdsTopic = fdds::dds::Topic;
-// Ptr
+// using DdsService = fdds::dds::rpc::Service;
+// using DdsReplier = fdds::dds::rpc::Replier;
+// using DdsRequester = fdds::dds::rpc::Requester;
+// Dds ptr
 using DdsTopicPtr = std::shared_ptr<DdsTopic>;
 using DdsTopicDataTypePtr = std::shared_ptr<fdds::dds::TopicDataType>;
 using DdsParticipantPtr = std::shared_ptr<DdsDomainParticipant>;
@@ -65,6 +71,10 @@ using DdsPublisherPtr = std::shared_ptr<DdsPublisher>;
 using DdsSubscriberPtr = std::shared_ptr<DdsSubscriber>;
 using DdsWriterPtr = std::shared_ptr<DdsWriter>;
 using DdsReaderPtr = std::shared_ptr<DdsReader>;
+// using DdsReplierPtr = std::shared_ptr<DdsReplier>;
+// using DdsRequesterPtr = std::shared_ptr<DdsRequester>;
+// Rpc ptr
+// using DdsServicePtr = std::shared_ptr<DdsService>;
 // Qos
 using DdsDomainParticipantQos = fdds::dds::DomainParticipantQos;
 using DdsTopicQos = fdds::dds::TopicQos;
@@ -72,6 +82,8 @@ using DdsPublisherQos = fdds::dds::PublisherQos;
 using DdsSubscriberQos = fdds::dds::SubscriberQos;
 using DataWriterQos = fdds::dds::DataWriterQos;
 using DataReaderQos = fdds::dds::DataReaderQos;
+// using DdsReplierQos = fdds::dds::ReplierQos;
+// using DdsRequesterQos = fdds::dds::RequesterQos;
 using DdsUDPv4TransportDescriptor = fdds::rtps::UDPv4TransportDescriptor;
 // CallbackPtr
 using DdsReaderCallbackPtr = std::shared_ptr<DdsReaderCallback>;
@@ -80,6 +92,7 @@ using DdsSampleInfo = fdds::dds::SampleInfo;
 
 // Type
 using DdsTypeSupport = fdds::dds::TypeSupport;
+// using DdsServiceTypeSupport = fdds::dds::rpc::ServiceTypeSupport;
 // MemberId
 constexpr auto DDS_MEMBER_ID_INVALID = fdds::dds::MEMBER_ID_INVALID;
 
@@ -100,6 +113,8 @@ using DdsDynamicPubSubType = fdds::dds::DynamicPubSubType;
 #define DDS_SUBSCRIBER_QOS_DEFAULT fdds::dds::SUBSCRIBER_QOS_DEFAULT
 #define DDS_DATAWRITER_QOS_DEFAULT fdds::dds::DATAWRITER_QOS_DEFAULT
 #define DDS_DATAREADER_QOS_DEFAULT fdds::dds::DATAREADER_QOS_DEFAULT
+#define DDS_REPLIER_QOS_DEFAULT fdds::dds::REPLIER_QOS_DEFAULT
+#define DDS_REQUESTER_QOS_DEFAULT fdds::dds::REQUESTER_QOS_DEFAULT
 // Dds kind
 constexpr auto DDS_BEST_EFFORT_RELIABILITY_QOS = fdds::dds::BEST_EFFORT_RELIABILITY_QOS;
 constexpr auto DDS_RELIABLE_RELIABILITY_QOS = fdds::dds::RELIABLE_RELIABILITY_QOS;
@@ -144,7 +159,6 @@ inline constexpr bool IS_DYNAMIC_DATA_V = std::is_same_v<T, DdsDynamicData>;
  *
  * @tparam MSG message type
  */
-
 template <typename MSG>
 class DdsReaderListener : public fdds::dds::DataReaderListener {
    public:

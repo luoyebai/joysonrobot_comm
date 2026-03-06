@@ -1,7 +1,7 @@
 #pragma once
 
+// ROBOT CHANNEL
 #include "channel_factory.hpp"
-#include "jsrcomm/robot/rpc/response.hpp"
 
 namespace jsr::robot::channel {
 

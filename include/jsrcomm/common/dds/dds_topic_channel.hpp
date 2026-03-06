@@ -73,6 +73,7 @@ class DdsTopicChannel {
     DdsReaderPtr getReader() const { return reader_; }
 
     bool write(void* msg) {
+        assert(writer_ != nullptr && msg != nullptr);
         // const MSG *const_msg_ptr = &msg;
         // MSG *non_const_msg_ptr = const_cast<MSG *>(const_msg_ptr);
         // return writer_->write(static_cast<void *>(&non_const_msg_ptr));
@@ -80,10 +81,10 @@ class DdsTopicChannel {
     }
 
    private:
-    DdsWriterPtr writer_;
-    DdsReaderPtr reader_;
-    DdsTopicPtr topic_;
-    DdsReaderListenerPtr<MSG> listener_;
+    DdsWriterPtr writer_{nullptr};
+    DdsReaderPtr reader_{nullptr};
+    DdsTopicPtr topic_{nullptr};
+    DdsReaderListenerPtr<MSG> listener_{nullptr};
 };
 
 template <typename MSG>

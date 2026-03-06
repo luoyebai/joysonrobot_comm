@@ -86,7 +86,7 @@ class ChannelFactory {
    private:
     bool initialized_ = false;
     std::mutex mutex_;
-    jsr::common::dds::DdsFactoryModelPtr dds_factory_model_;
+    jsr::common::dds::DdsFactoryModelPtr dds_factory_model_{nullptr};
 };
 
 }  // namespace jsr::robot::channel

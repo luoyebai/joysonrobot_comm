@@ -13,7 +13,7 @@
 // FMT
 #include <fmt/format.h>
 
-namespace jsr::rpc {
+namespace jsr::grpc {
 
 constexpr auto GRPC_BUILDER_USE_DEFAULT_CQS = false;
 constexpr auto GRPC_BUILDER_DEFAULT_CQS = 4;
@@ -43,11 +43,11 @@ struct GrpcConfigOptions {
     int pollers_max = GRPC_BUILDER_DEFAULT_POLLERS_MAX;
 };
 
-using grpc::Channel;
-using grpc::ClientContext;
-using grpc::Server;
-using grpc::ServerBuilder;
-using grpc::Status;
+using ::grpc::Channel;
+using ::grpc::ClientContext;
+using ::grpc::Server;
+using ::grpc::ServerBuilder;
+using ::grpc::Status;
 
 template <class T, class Request, class Reply>
 class ClientWrapper {
@@ -71,8 +71,8 @@ class ClientWrapper {
     template <typename Stream>
     void streamCall(Stream s, std::atomic_bool& run_flag, std::function<Request(void)> get_req,
                     std::function<void(Reply*)> take_rep) {
-        ClientContext context;
-        auto stream = std::invoke(s, stub_.get(), &context);
+        context_ = std::make_unique<ClientContext>();
+        auto stream = std::invoke(s, stub_.get(), context_.get());
         auto* stream_ptr = stream.get();
 
         std::thread writer([stream_ptr, &run_flag, &get_req]() {
@@ -91,6 +91,7 @@ class ClientWrapper {
         }
         writer.join();
         stream->Finish();
+        context_.reset();
     }
 
     template <typename Stream>
@@ -117,14 +118,22 @@ class ClientWrapper {
         stream->Finish();
     }
 
+    void tryCancel() {
+        if (context_) {
+            context_->TryCancel();
+        }
+    }
+
+   private:
     std::unique_ptr<typename T::Stub> stub_;
+    std::unique_ptr<ClientContext> context_;
 };
 
 auto GetServerBuilderDefaultOptions() {
     GrpcPollerEqualWarning<GRPC_BUILDER_DEFAULT_POLLERS_MIN == GRPC_BUILDER_DEFAULT_POLLERS_MAX> warn_equal;
     auto options = GrpcConfigOptions();
     if constexpr (!GRPC_BUILDER_USE_DEFAULT_CQS) {
-        options.cqs = std::thread::hardware_concurrency() / 2;
+        options.cqs = static_cast<int>(std::thread::hardware_concurrency() / 2);
         GrpcUseCoresTooMuchWarning<(GRPC_BUILDER_DEFAULT_POLLERS_MAX > 2)> warn_cores_too_much;
     }
     return options;
@@ -134,18 +143,18 @@ template <class T>
 void RunServer(uint16_t port, GrpcConfigOptions options = GetServerBuilderDefaultOptions()) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
 
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    ::grpc::EnableDefaultHealthCheckService(true);
+    ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
     T service;
     // Listen on the given address without any authentication mechanism.
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
     // Register "service" as the instance through which we'll communicate with
     // clients. In this case it corresponds to an *synchronous* service.
     builder.RegisterService(&service);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
     // Finally assemble the server.
     std::unique_ptr<Server> server(builder.BuildAndStart());
 
@@ -158,34 +167,34 @@ template <class T>
 std::unique_ptr<Server> CreateServer(uint16_t port, T& service,
                                      GrpcConfigOptions options = GetServerBuilderDefaultOptions()) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    ::grpc::EnableDefaultHealthCheckService(true);
+    ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
     builder.RegisterService(&service);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
     return builder.BuildAndStart();
 }
 
 template <class... Services>
-std::unique_ptr<grpc::Server> CreateServers(uint16_t port, GrpcConfigOptions options, Services&... services) {
+std::unique_ptr<Server> CreateServers(uint16_t port, GrpcConfigOptions options, Services&... services) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
-    grpc::EnableDefaultHealthCheckService(true);
-    grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    ::grpc::EnableDefaultHealthCheckService(true);
+    ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    ::grpc::ServerBuilder builder;
+    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
     (builder.RegisterService(&services), ...);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
-    builder.SetSyncServerOption(grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
+    builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
     return builder.BuildAndStart();
 }
 
 template <class... Services>
-std::unique_ptr<grpc::Server> CreateServers(uint16_t port, Services&... services) {
+std::unique_ptr<Server> CreateServers(uint16_t port, Services&... services) {
     return std::move(CreateServers(port, GetServerBuilderDefaultOptions(), services...));
 }
 
-}  // namespace jsr::rpc
+}  // namespace jsrcomm::grpc

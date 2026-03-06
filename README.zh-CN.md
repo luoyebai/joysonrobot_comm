@@ -280,7 +280,7 @@ int main() {
         header.SetApiId(api);
         req.SetHeader(header);
         req.SetBody("This is a message");
-		// 这里能得到响应Response
+		    // 这里能得到响应Response
         client->SendApiRequest(req);
     }
 }
@@ -357,7 +357,7 @@ ldd ../third_party/lib/x86_64/libfastdds.so.3.4 | grep libfastcdr.so.2
 ## 未来计划
 
 - [x] 添加异步RPC通讯支持
-- [ ] 通过IDL自动生成基础RPC代码
-- [ ] 添加gRPC支持
+- [x] 通过IDL自动生成基础RPC代码：已取消该功能
+- [x] 添加gRPC支持
 - [ ] 添加MQTT支持
 - [ ] 添加WebRTC支持

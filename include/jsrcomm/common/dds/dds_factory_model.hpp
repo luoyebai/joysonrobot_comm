@@ -54,6 +54,14 @@ class DdsFactoryModel {
      */
     void init(const nlohmann::json& config);
 
+    DdsTopicPtr getTopic(const std::string& topic_name) const {
+        auto it = topic_map_.find(topic_name);
+        if (it != topic_map_.end()) {
+            return it->second;
+        }
+        return nullptr;
+    }
+
     void closeWriter(const std::string& channel_name) {
         publisher_->delete_datawriter(publisher_->lookup_datawriter(channel_name));
     }
@@ -63,14 +71,6 @@ class DdsFactoryModel {
     }
 
     void closeTopic(const DdsTopicPtr& topic) { participant_->delete_topic(topic.get()); }
-
-    DdsTopicPtr getTopic(const std::string& topic_name) {
-        auto it = topic_map_.find(topic_name);
-        if (it != topic_map_.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
 
     // static
     template <typename MSG, typename = not_dynamic_data_t<MSG>>
@@ -143,13 +143,15 @@ class DdsFactoryModel {
 
    private:
     DdsParticipantPtr participant_;
+    // dds communication entity
     DdsPublisherPtr publisher_;
     DdsSubscriberPtr subscriber_;
-
+    // topic map
     std::map<std::string, DdsTopicPtr> topic_map_;
-
+    // config
     DdsDomainParticipantQos participant_qos_;
     DdsTopicQos topic_qos_;
+    // dds
     DdsPublisherQos publisher_qos_;
     DdsSubscriberQos subscriber_qos_;
     DataWriterQos writer_qos_;

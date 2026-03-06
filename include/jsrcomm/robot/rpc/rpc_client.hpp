@@ -27,15 +27,15 @@ class RpcClient {
     ~RpcClient() = default;
 
     void init(const std::string& channel_name);
-    Response SendApiRequest(const Request& req, int64_t timeout_ms = 1000);
-    void SendApiRequestAsync(const Request& req, std::function<void(Response)> cb);
+    Response sendApiRequest(const Request& req, int64_t timeout_ms = 1000);
+    void sendApiRequestAsync(const Request& req, std::function<void(Response)> cb);
 
-    void Stop();
+    void stop();
 
-    uint64_t GenUuid();
+    uint64_t genUuid();
 
    private:
-    void DdsSubMsgHandler(const void* msg);
+    void ddsSubMsgHandler(const void* msg);
 
     struct SyncEntry {
         std::promise<Response> prom;

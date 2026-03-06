@@ -54,7 +54,7 @@ class LocoServer : public jrr::RpcServer {
    public:
     LocoServer() = default;
     ~LocoServer() = default;
-    jrr::Response HandleRequest(jrr::Request& request) override {
+    jrr::Response handleRequest(jrr::Request& request) override {
         auto response = jrr::Response();
         response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
         response.SetBody(request.MoveBody());
@@ -76,7 +76,7 @@ TEST_CASE("Rpc Client/Server communication benchmark case", "[DDS][RPC]") {
     auto req = jrr::Request(jrr::RequestHeader(api_id), std::string(8000, 'X'));
 
     BENCHMARK("Rpc Client/Server communication benchmark") {
-        auto resp = client->SendApiRequest(req);
+        auto resp = client->sendApiRequest(req);
         REQUIRE(IsRequestOk(req, resp));
     };
 }
@@ -92,7 +92,7 @@ TEST_CASE("RPC async benchmark", "[DDS][RPC][ASYNC]") {
     jrr::Request req(jrr::RequestHeader(api_id), std::string(8000, 'X'));
 
     BENCHMARK("RPC async call") {
-        client->SendApiRequestAsync(req, [&](const jrr::Response& resp) { REQUIRE(IsRequestOk(req, resp)); });
+        client->sendApiRequestAsync(req, [&](const jrr::Response& resp) { REQUIRE(IsRequestOk(req, resp)); });
     };
 }
 
@@ -292,8 +292,8 @@ template <class Greeter>
 class GreeterClient {
    public:
     using ServiceObject = Greeter;
-    using Wrapper = jsr::rpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
-    GreeterClient(std::shared_ptr<Channel> channel) : wrapper_(std::make_unique<Wrapper>(channel)) {}
+    using Wrapper = jsr::grpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
+    explicit GreeterClient(std::shared_ptr<Channel> channel) : wrapper_(std::make_unique<Wrapper>(channel)) {}
 
     std::string sayHello(const std::string& user) {
         HelloRequest request{};
@@ -411,7 +411,7 @@ TEST_CASE("gRPC single service benchmark", "[GRPC]") {
 
     auto service = GreeterServiceImpl<Greeter1>();
 
-    auto server = jsr::rpc::CreateServer(port, service);
+    auto server = jsr::grpc::CreateServer(port, service);
 
     auto channel = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
     channel->WaitForConnected(std::chrono::system_clock::now() + std::chrono::seconds(3));
@@ -438,7 +438,7 @@ TEST_CASE("gRPC multi service benchmark", "[GRPC][BENCH]") {
     auto service1 = GreeterServiceImpl<Greeter1>();
     auto service2 = GreeterServiceImpl<Greeter2>();
 
-    auto server = jsr::rpc::CreateServers(port, service1, service2);
+    auto server = jsr::grpc::CreateServers(port, service1, service2);
 
     auto channel = grpc::CreateChannel(addr, grpc::InsecureChannelCredentials());
     channel->WaitForConnected(std::chrono::system_clock::now() + std::chrono::seconds(3));

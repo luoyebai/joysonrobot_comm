@@ -20,16 +20,26 @@ void RpcServer::init(const std::string& channel_name) {
     channel_publisher_->initChannel();
     channel_subscriber_ =
         std::make_shared<jr::channel::ChannelSubscriber<RpcReqMsg>>(channel_name + RPC_REQUEST_CHANNEL_SUFFIX);
-    channel_subscriber_->initChannel([this](const void* msg) { this->DdsReqMsgHandler(msg); });
+    channel_subscriber_->initChannel([this](const void* msg) { this->ddsReqMsgHandler(msg); });
     return;
 }
-void RpcServer::Stop() {
+
+void RpcServer::stop() {
     channel_publisher_->closeChannel();
     channel_subscriber_->closeChannel();
     return;
 }
 
-void RpcServer::DdsReqMsgHandler(const void* msg) {
+RpcServer* RpcServer::registerApi(int64_t api_id, Handler handler) {
+    assert(handler != nullptr);
+    if (handlers_.count(api_id)) {
+        throw std::runtime_error("api already registered");
+    }
+    handlers_[api_id] = std::move(handler);
+    return this;
+}
+
+void RpcServer::ddsReqMsgHandler(const void* msg) {
     const auto* req_msg = static_cast<const RpcReqMsg*>(msg);
     RequestHeader header;
     std::string body;
@@ -47,12 +57,18 @@ void RpcServer::DdsReqMsgHandler(const void* msg) {
     auto req = Request(header, body);
     // Use the request to call the appropriate handler
     // Like hardware, software, etc.
-    auto resp = HandleRequest(req);
-    SendResponse(req_msg->uuid(), resp);
+
+    Response resp;
+    if (handlers_.count(req.GetHeader().GetApiId())) {
+        resp = handlers_[req.GetHeader().GetApiId()](req);
+    } else {
+        resp = handleRequest(req);
+    }
+    sendResponse(req_msg->uuid(), resp);
     return;
 }
 
-int64_t RpcServer::SendResponse(const uint64_t uuid, const Response& resp) {
+int64_t RpcServer::sendResponse(const uint64_t uuid, const Response& resp) {
     RpcRespMsg rpc_resp_msg;
     rpc_resp_msg.uuid(uuid);
     rpc_resp_msg.header(resp.GetHeader().toJson().dump());

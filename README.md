@@ -374,6 +374,6 @@ If you need to use ROS 2 together with this project at runtime, manually configu
 
 - [x] Add DDS asynchronous RPC support
 - [ ] Automatically generate basic RPC code from IDL
-- [ ] Add gRPC support
+- [x] Add gRPC support
 - [ ] Add MQTT support
 - [ ] Add WebRTC support

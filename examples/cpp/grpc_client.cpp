@@ -23,7 +23,7 @@ constexpr size_t GREETER_CLIENT_STREAM_MSG_SIZE = 10;
 class GreeterClient {
    public:
     using ServiceObject = Greeter1;
-    using Wrapper = jsr::rpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
+    using Wrapper = jsr::grpc::ClientWrapper<ServiceObject, HelloRequest, HelloReply>;
     explicit GreeterClient(std::shared_ptr<Channel> channel) : wrapper_(std::make_unique<Wrapper>(channel)) {}
     GreeterClient(const GreeterClient&) = delete;
     GreeterClient& operator=(const GreeterClient&) = delete;

@@ -52,7 +52,7 @@ int main() {
         fmt::print("[Server] runtime: {} seconds\n", WAIT_TIME);
     }
     auto service = GreeterServiceImpl();
-    auto server = jsr::rpc::CreateServer(PORT, service);
+    auto server = jsr::grpc::CreateServer(PORT, service);
     std::thread([&server, WAIT_TIME] {
         if (WAIT_TIME == 0) {
             getchar();

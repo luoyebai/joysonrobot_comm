@@ -12,12 +12,12 @@ namespace jrc = jsr::robot::channel;
 
 int main() {
     jrc::ChannelFactory::instance()->init(0);
-    auto client = std::make_shared<jsr::robot::rpc::RpcClient>();
+    auto client = std::make_shared<jsr::robot::grpc::RpcClient>();
     client->init(SERVER_NAME);
     size_t frame_count = 0;
     auto last_time = std::chrono::steady_clock::now();
-    auto req = jsr::robot::rpc::Request();
-    auto header = jsr::robot::rpc::RequestHeader();
+    auto req = jsr::robot::grpc::Request();
+    auto header = jsr::robot::grpc::RequestHeader();
 
     constexpr size_t REQUEST_COUNT = 5000;
     constexpr size_t API_BASE_SIZE = 2000;
@@ -29,9 +29,9 @@ int main() {
         req.SetBody("This is a message");
 
         // sync send and async send
-        auto resp = client->SendApiRequest(req);
+        auto resp = client->sendApiRequest(req);
         fmt::print("Response: {}\n", resp.GetBody());
-        client->SendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {
+        client->sendApiRequestAsync(req, [](const jsr::robot::grpc::Response& resp) {
             fmt::print("Async Response: {}\n", resp.GetBody());
             return;
         });
@@ -52,5 +52,5 @@ int main() {
     header.SetApiId(api);
     req.SetHeader(header);
     req.SetBody("Exit");
-    client->SendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {});
+    client->sendApiRequestAsync(req, [](const jsr::robot::grpc::Response& resp) {});
 }

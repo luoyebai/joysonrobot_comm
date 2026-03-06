@@ -5,8 +5,6 @@
 #include <string>
 // ROBOT CHANNEL
 #include "channel_factory.hpp"
-// ROBOT RPC
-#include "jsrcomm/robot/rpc/request.hpp"
 
 namespace jsr::robot::channel {
 
@@ -53,9 +51,9 @@ class ChannelPublisher {
 
    private:
     std::string channel_name_;
-    ChannelPtr<MSG> channel_ptr_;
+    ChannelPtr<MSG> channel_ptr_{nullptr};
     // dynamic
-    jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder_;
+    jsr::common::dds::DdsDynamicTypeBuilder::_ref_type type_builder_{nullptr};
 };
 
 template <typename MSG>

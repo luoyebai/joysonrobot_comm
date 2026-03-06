@@ -39,7 +39,7 @@ class Server : public jrr::RpcServer {
     std::atomic_flag stopped = ATOMIC_FLAG_INIT;
 
    private:
-    jrr::Response HandleRequest(jrr::Request& request) override {
+    jrr::Response handleRequest(jrr::Request& request) override {
         auto api_id = request.GetHeader().GetApiId();
         auto response = jrr::Response();
         switch (static_cast<ApiId>(api_id)) {
