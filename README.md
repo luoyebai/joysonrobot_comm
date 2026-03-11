@@ -53,8 +53,12 @@ To build this project, install the following dependencies (example shown using `
 ```sh
 sudo apt-get update
 sudo apt-get install cmake build-essential python3-dev python3-pip
-sudo apt-get install pybind11-dev libtinyxml2-dev libssl-dev
-pip3 install pybind11-stubgen
+# DDS depends
+sudo apt-get install libtinyxml2-dev libssl-dev
+# GRPC depends
+sudo apt install pkg-config 
+sudo apt install libprotobuf-dev libgrpc++-dev 
+sudo apt install protobuf-compiler protobuf-compiler-grpc
 ```
 
 ---
