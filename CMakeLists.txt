@@ -55,8 +55,21 @@ else()
     add_library(${TARGET_NAME} STATIC ${SOURCES})
 endif()
 
-# target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_idl ${LIB_SOURCECS})
-target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_idl ${TARGET_NAME}_proto ${LIB_SOURCECS})
+if(ENABLE_DDS)
+    set(TARGET_GEN ${TARGET_NAME}_idl)
+    add_compile_definitions(ENABLE_DDS)
+    if(ENABLE_GRPC)
+        set(TARGET_GEN ${TARGET_NAME}_idl ${TARGET_NAME}_proto)
+        add_compile_definitions(ENABLE_GRPC)
+    endif()
+elseif(ENABLE_GRPC)
+    set(TARGET_GEN ${TARGET_NAME}_proto)
+    add_compile_definitions(ENABLE_GRPC)
+else()
+    message(FATAL_ERROR "ENABLE_DDS or ENABLE_GRPC must be set")
+endif()
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_GEN} ${LIB_SOURCECS})
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 
 # ==============
@@ -95,14 +108,19 @@ endif()
 # ==============
 # generate idl #
 # ==============
-set(IDL_DEPS ${LIB_SOURCECS})
-include(${cmake_path}/genidl.cmake)
-file(GLOB_RECURSE idl_files "${CMAKE_SOURCE_DIR}/idl/*.idl")
-gendds_for_idl(${TARGET_NAME}_idl ${idl_files})
 
-file(GLOB_RECURSE proto_files "${CMAKE_SOURCE_DIR}/proto/*.proto")
-include(${cmake_path}/proto.cmake)
-gendds_for_proto(${TARGET_NAME}_proto ${proto_files})
+if(ENABLE_DDS)
+    set(IDL_DEPS ${LIB_SOURCECS})
+    include(${cmake_path}/genidl.cmake)
+    file(GLOB_RECURSE idl_files "${CMAKE_SOURCE_DIR}/idl/*.idl")
+    gendds_for_idl(${TARGET_NAME}_idl ${idl_files})
+endif()
+
+if(ENABLE_GRPC)
+    file(GLOB_RECURSE proto_files "${CMAKE_SOURCE_DIR}/proto/*.proto")
+    include(${cmake_path}/genproto.cmake)
+    gengrpc_for_proto(${TARGET_NAME}_proto ${proto_files})
+endif()
 
 # ================
 # examples build #
@@ -139,7 +157,7 @@ install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME
 install(DIRECTORY third_party/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_NAME})
 # target libs
 install(
-    TARGETS ${TARGET_NAME} ${TARGET_NAME}_idl ${TARGET_NAME}_proto
+    TARGETS ${TARGET_NAME} ${TARGET_GEN}
     EXPORT ${TARGET_NAME}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # static
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # dynamic

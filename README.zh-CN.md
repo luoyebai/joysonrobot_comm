@@ -41,8 +41,12 @@ Joyson Robot 公司所使用的机器人COMM封装代码，供开发人员使用
 ```sh
 sudo apt-get update
 sudo apt-get install cmake build-essential python3-dev python3-pip
-sudo apt-get install pybind11-dev libtinyxml2-dev libssl-dev
-pip3 install pybind11-stubgen
+# 以下是使用 dds 需要的依赖
+sudo apt-get install libtinyxml2-dev libssl-dev
+# 以下是使用 grpc 需要的依赖
+sudo apt install pkg-config 
+sudo apt install libprotobuf-dev libgrpc++-dev 
+sudo apt install protobuf-compiler protobuf-compiler-grpc
 ```
 ---
 

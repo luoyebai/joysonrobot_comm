@@ -7,7 +7,7 @@ find_package(Protobuf REQUIRED)
 # ========================================================================
 # Function:
 #
-# * gendds_for_proto(IDL_NAMES...)
+# * gengrpc_for_proto(IDL_NAMES...)
 # * Automatically generates DDS sources from IDL files located in ${CMAKE_SOURCE_DIR}/idl/ directory.
 #
 # Params:
@@ -20,7 +20,7 @@ find_package(Protobuf REQUIRED)
 # * Searches for ${CMAKE_SOURCE_DIR}/idl/<name>.idl
 # * Generates C++ source and header files for DDS
 # ========================================================================
-function(gendds_for_proto IDL_LIB_NAME)
+function(gengrpc_for_proto IDL_LIB_NAME)
     set(PROTO_FILES ${ARGN})
     set(PROTO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${TARGET_NAME}/proto)
 

@@ -22,7 +22,7 @@ add_build_type(
     tests
     LIBS
     ${TARGET_NAME}
-    ${TARGET_NAME}_idl
+    ${TARGET_GEN}
     SOURCES
     test_tools/catch_amalgamated.cpp)
 

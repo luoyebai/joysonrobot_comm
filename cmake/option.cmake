@@ -2,8 +2,10 @@
 # All Options:
 #
 # * BUILD_RELEASE             -> ON: build in Release mode, OFF: build in Debug mode
-# * BUILD_COMM_SHARED          -> ON: build COMM as shared library (.so/.dll), OFF: static library (.a/.lib)
+# * BUILD_COMM_SHARED         -> ON: build COMM as shared library (.so/.dll), OFF: static library (.a/.lib)
 # * BUILD_TEST                -> ON: build test targets
+# * ENABLE_DDS                -> ON: use dds and generate idl files
+# * ENABLE_GRPC               -> ON: use grpc and generate proto files
 # * ENABLE_DOXYGEN            -> ON: use doxygen to generate documentation
 # * BUILD_EXAMPLE             -> ON: build example targets
 # * SANITIZERS_ADDRESS_ON     -> ON: enable AddressSanitizer (ASan) for memory error detection
@@ -17,6 +19,8 @@ option(BUILD_COMM_SHARED "Build Comm Type of Shared" OFF)
 option(BUILD_TEST "Build Test" ON)
 # Compiling together with Examples requires modifying cmake to add_build_type
 option(BUILD_EXAMPLE "Build Example" OFF)
+option(ENABLE_DDS "Enable dds" ON)
+option(ENABLE_GRPC "Enable grpc" ON)
 option(ENABLE_DOXYGEN "Enable Doxygen" OFF)
 # Debug option
 option(SANITIZERS_ADDRESS_ON "Enable AddressSanitizer" OFF)
@@ -29,6 +33,8 @@ message(
            "Build Release: ${BUILD_RELEASE}\n"
            "Build Comm Shared: ${BUILD_COMM_SHARED}\n"
            "Build Example: ${BUILD_EXAMPLE}\n"
+           "Enable DDS: ${ENABLE_DDS}\n"
+           "Enable GRPC: ${ENABLE_GRPC}\n"
            "Enable Doxygen: ${ENABLE_DOXYGEN}\n"
            "Build Test: ${BUILD_TEST}\n"
            "Sanitizers Address: ${SANITIZERS_ADDRESS_ON}\n"

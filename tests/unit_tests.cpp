@@ -7,6 +7,8 @@
 #include <fmt/core.h>
 // TEST
 #include "test_tools/catch_amalgamated.hpp"
+
+#ifdef ENABLE_DDS
 // DYNAMIC DDS
 #include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // ROBOT CHANNEL
@@ -21,10 +23,14 @@
 #include "jsrcomm/robot/rpc/rpc_server.hpp"
 //IDL
 #include "jsrcomm/idl/ImuState.hpp"
+#endif
+
+#ifdef ENABLE_GRPC
 // GRPC
 #include "jsrcomm/common/grpc/grpc_wrapper.hpp"
 // PROTO
 #include "jsrcomm/proto/hello_world.grpc.pb.h"
+#endif
 
 namespace jsr_test_fmt {
 TEST_CASE("fmt basic formatting", "[FMT]") {
@@ -35,6 +41,7 @@ TEST_CASE("fmt basic formatting", "[FMT]") {
 }
 }  // namespace jsr_test_fmt
 
+#ifdef ENABLE_DDS
 namespace jsr_test_dds {
 constexpr auto LR_LOCO_TOPIC = "lr/loco_ctrl";
 constexpr auto LOCO_RPC_NAME = "loco";
@@ -549,6 +556,10 @@ TEST_CASE("Idl Dynamic type serialize test", "[DDS][DYNAMIC][JSON]") {
 
 }  // namespace jsr_test_dds_dynamic
 
+#endif
+
+#ifdef ENABLE_GRPC
+
 namespace jsr_test_grpc {
 
 // proto
@@ -758,3 +769,5 @@ TEST_CASE("gRPC multi service test", "[GRPC]") {
     server->Shutdown();
 }
 }  // namespace jsr_test_grpc
+
+#endif
