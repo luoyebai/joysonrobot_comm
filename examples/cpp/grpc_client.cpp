@@ -4,6 +4,7 @@
 // FMT
 #define FMT_HEADER_ONLY
 #include <fmt/core.h>
+
 // GRPC
 #include "jsrcomm/common/grpc/grpc_wrapper.hpp"
 // PROTO

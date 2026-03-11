@@ -123,7 +123,7 @@ int main() {
     for (size_t i = 0; i < SLEEP_COUNT; ++i) {
         if (server->stopped._M_i) {
             fmt::print("[Server] | Stoped...\n");
-            server->Stop();
+            server->stop();
             break;
         }
         std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
