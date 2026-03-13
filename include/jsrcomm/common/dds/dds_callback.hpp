@@ -56,36 +56,4 @@ class DdsReaderCallback {
     DdsMessageHandler handler_;
 };
 
-/**
- * @brief DDS service callback
- *
- */
-class DdsServiceCallback {
-   public:
-    DdsServiceCallback() = default;
-    explicit DdsServiceCallback(DdsRpcHandler handler) : handler_(std::move(handler)){};
-    DdsServiceCallback(const DdsServiceCallback& other) = default;
-    DdsServiceCallback& operator=(const DdsServiceCallback& other) = default;
-    ~DdsServiceCallback() = default;
-
-    /**
-     * @brief Check if the callback has a message handler
-     *
-     * @return true
-     * @return false
-     */
-    bool hasMessageHandler() const;
-
-    /**
-     * @brief When data is available, call the message handler
-     *
-     * @param data
-     * @return void*
-     */
-    void* onDataAvailable(const void* data);
-
-   private:
-    DdsRpcHandler handler_;
-};
-
 }  // namespace jsr::common::dds
