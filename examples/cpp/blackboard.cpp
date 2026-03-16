@@ -4,6 +4,9 @@
 #include <shared_mutex>
 #include <string>
 #include <thread>
+// FMT
+#define FMT_HEADER_ONLY
+#include <fmt/core.h>
 // JSRCOMM
 #include "jsrcomm/robot/channel/channel_blackboard.hpp"
 // IDL
@@ -24,14 +27,11 @@ int main() {
         const auto time = bb.get_timestamp<jsr::msg::LowState>(TOPIC_NAME);
         if (low_state.has_value()) {
             auto imu_state = low_state.value().imu_state();
-            std::cout << "[" << time.value() << "] ";
-            std::cout << "Got imu state:\n";
-            std::cout << "\tacc = " << imu_state.acc()[0] << "," << imu_state.acc()[1] << "," << imu_state.acc()[2]
-                      << "\n";
-            std::cout << "\tgyro = " << imu_state.gyro()[0] << "," << imu_state.gyro()[1] << "," << imu_state.gyro()[2]
-                      << "\n";
-            std::cout << "\tgyro = " << imu_state.rpy()[0] << "," << imu_state.rpy()[1] << "," << imu_state.rpy()[2]
-                      << "\n";
+            fmt::print("[{:.2f}] Got imu state:\n", time.value());
+            fmt::print("\tacc = {} {} {}\n", imu_state.acc()[0], imu_state.acc()[1], imu_state.acc()[2]);
+            fmt::print("\tgyro = {} {} {}\n", imu_state.gyro()[0], imu_state.gyro()[1], imu_state.gyro()[2]);
+            fmt::print("\trpy = {} {} {}\n", imu_state.rpy()[0], imu_state.rpy()[1], imu_state.rpy()[2]);
+
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME));
         }
     }
