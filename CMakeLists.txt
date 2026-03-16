@@ -16,7 +16,7 @@ set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "runtime")
 
 project(
     ${TARGET_NAME}
-    VERSION 2.1.0
+    VERSION 2.2.0
     LANGUAGES CXX)
 
 # option

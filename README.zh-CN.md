@@ -14,6 +14,8 @@ Joyson Robot 公司所使用的机器人COMM封装代码，供开发人员使用
 
 4. 该COMM对应的[Python接口实现](https://github.com/luoyebai/joysonrobot_comm/tree/main/python)。
 
+> python 接口于 v2.1.0 之后删除，其内容在后续迁移至 jsrsdk 中。
+
 ## 内容列表
 
 - [Joyson Robot COMM](#joyson-robot-comm)

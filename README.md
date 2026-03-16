@@ -15,7 +15,10 @@ This repository contains:
 
 4. The [Python interface implementation](https://github.com/luoyebai/joysonrobot_comm/tree/main/python) for this COMM.
 
+> python interface is removed in after version 2.1.0, the python interface is moved to jsrsdk.
+
 > [Chinese version Readme](https://github.com/luoyebai/joysonrobot_comm/tree/main/README.zh-CN.md)
+
 
 ---
 
