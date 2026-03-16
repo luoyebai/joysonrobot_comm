@@ -149,7 +149,7 @@ int main() {
             client.stopChat();
         } else if (cmd == "6") {
             std::string new_name;
-            std::cout << "Input new name: ";
+            fmt::print("Input new name: ");
             std::cin >> new_name;
             name = new_name;
         } else if (cmd == "q") {
