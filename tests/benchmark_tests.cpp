@@ -12,6 +12,7 @@
 // DYNAMIC DDS
 #include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // ROBOT CHANNEL
+#include "jsrcomm/robot/channel/channel_blackboard.hpp"
 #include "jsrcomm/robot/channel/channel_publisher.hpp"
 #include "jsrcomm/robot/channel/channel_subscriber.hpp"
 // RPC
@@ -22,6 +23,7 @@
 #include "jsrcomm/robot/rpc/rpc_client.hpp"
 #include "jsrcomm/robot/rpc/rpc_server.hpp"
 //IDL
+#include "jsrcomm/idl/BmsState.hpp"
 #include "jsrcomm/idl/ImuState.hpp"
 #endif
 
@@ -58,6 +60,33 @@ TEST_CASE("DDS pub/sub benchmark", "[DDS]") {
     };
 }
 
+TEST_CASE("DDS blackboard benchmark", "[DDS][BLACKBOARD]") {
+    jrc::ChannelFactory::instance()->init(0);
+    constexpr auto T1 = "bms_state";
+    constexpr auto T2 = "imu_state";
+    BmsState bms_msg;
+    ImuState imu_msg;
+    jrc::ChannelPublisher<BmsState> pub1(T1);
+    jrc::ChannelPublisher<ImuState> pub2(T2);
+
+    jrc::ChannelBlackboard bb;
+    bb.registerTopic<BmsState>(T1, [&bms_msg](const BmsState* msg) { REQUIRE(*msg == bms_msg); });
+    bb.registerTopic<ImuState>(T2, [&imu_msg](const ImuState* msg) { REQUIRE(*msg == imu_msg); });
+
+    pub1.initChannel();
+    pub2.initChannel();
+
+    BENCHMARK("DDS publish") {
+        pub1.write(&bms_msg);
+        pub2.write(&imu_msg);
+    };
+
+    pub1.closeChannel();
+    pub2.closeChannel();
+    bb.removeTopic<BmsState>(T1);
+    bb.removeTopic<ImuState>(T2);
+}
+
 class LocoServer : public jrr::RpcServer {
    public:
     LocoServer() = default;
@@ -76,6 +105,7 @@ bool IsRequestOk(const jrr::Request& req, const jrr::Response& resp) {
 }
 
 TEST_CASE("Rpc Client/Server communication benchmark case", "[DDS][RPC]") {
+    jrc::ChannelFactory::instance()->init(0);
     auto api_id = static_cast<int64_t>(random() % MAX_API_ID);
     auto static server = std::make_shared<LocoServer>();
     auto static client = std::make_shared<jrr::RpcClient>();
@@ -90,6 +120,7 @@ TEST_CASE("Rpc Client/Server communication benchmark case", "[DDS][RPC]") {
 }
 
 TEST_CASE("RPC async benchmark", "[DDS][RPC][ASYNC]") {
+    jrc::ChannelFactory::instance()->init(0);
     static auto server = std::make_shared<LocoServer>();
     static auto client = std::make_shared<jrr::RpcClient>();
 
@@ -114,6 +145,7 @@ constexpr size_t CAP_SIZE = 100;
 
 TEST_CASE("Dynamic DDS pub/sub benchmark", "[DDS][DYNAMIC]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
 
     // ---- Type definition ----
     auto m1_builder = DdsDynamicFactory::createStructType("Member1");
@@ -183,6 +215,7 @@ TEST_CASE("Dynamic DDS pub/sub benchmark", "[DDS][DYNAMIC]") {
 constexpr auto TOPIC_NAME = "rt/low_state";
 TEST_CASE("Dynamic DDS pub/sub benchmark", "[DDS][DYNAMIC][IDL]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
 
     auto builder =
         DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
@@ -253,6 +286,7 @@ TEST_CASE("Dynamic DDS pub/sub benchmark", "[DDS][DYNAMIC][IDL]") {
 
 TEST_CASE("Idl Dynamic type serialize benchmark", "[DDS][DYNAMIC][JSON]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
     auto lowstate_type_builder =
         DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -470,7 +504,6 @@ TEST_CASE("gRPC multi service benchmark", "[GRPC][BENCH]") {
 
     server->Shutdown();
 }
-
 
 }  // namespace jsr_test_grpc
 

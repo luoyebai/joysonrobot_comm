@@ -18,6 +18,7 @@ int main() {
     auto pub = std::make_unique<jrc::ChannelPublisher<LowState>>(TOPIC);
     pub->initChannel();
     auto msg = LowState();
+    msg.imu_state().acc()[2] = 9.8;
     constexpr size_t MSG_NUMS = 1000;
     constexpr size_t SLEEP_TIME = 1;  // seconds
     for (size_t i = 0; i < MSG_NUMS; ++i) {

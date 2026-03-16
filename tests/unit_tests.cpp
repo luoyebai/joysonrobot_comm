@@ -12,6 +12,7 @@
 // DYNAMIC DDS
 #include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
 // ROBOT CHANNEL
+#include "jsrcomm/robot/channel/channel_blackboard.hpp"
 #include "jsrcomm/robot/channel/channel_publisher.hpp"
 #include "jsrcomm/robot/channel/channel_subscriber.hpp"
 // RPC
@@ -81,6 +82,42 @@ TEST_CASE("Publisher/Subscriber DDS communication test cases", "[DDS]") {
     sub.closeChannel();
 }
 
+TEST_CASE("Dds blackboard test", "[DDS][BLACKBOARD]") {
+    jrc::ChannelFactory::instance()->init(0);
+    auto pub1 = std::make_unique<jrc::ChannelPublisher<ImuState>>("test1");
+    auto pub2 = std::make_unique<jrc::ChannelPublisher<ImuState>>("test2");
+    pub1->initChannel();
+    pub2->initChannel();
+    auto data1 = ImuState();
+    auto data2 = ImuState();
+    auto bb = std::make_unique<jrc::ChannelBlackboard>();
+    bb->registerTopic<ImuState>("test1", [&data1](const ImuState* msg) {
+        REQUIRE(data1 == *msg);
+        return;
+    });
+    bb->registerTopic<ImuState>("test2", [&data2](const ImuState* msg) {
+        REQUIRE(data2 == *msg);
+        return;
+    });
+
+    for (size_t i = 0; i < TEST_COUNT; ++i) {
+        data1.acc()[2] = i;
+        data2.gyro()[2] = i;
+        pub1->write(&data1);
+        pub2->write(&data2);
+    }
+    pub1->closeChannel();
+    pub2->closeChannel();
+    bb->removeTopic<ImuState>("test1");
+    bb->removeTopic<ImuState>("test2");
+
+    bb->registerTopic<ImuState>("test1");
+    CHECK_THROWS(bb->registerTopic<ImuState>("test1"));
+    bb->removeTopic<ImuState>("test1");
+    bb->registerTopic<ImuState>("test1");
+    bb->removeTopic<ImuState>("test1");
+}
+
 class LocoServer : public jrr::RpcServer {
    public:
     LocoServer() = default;
@@ -99,6 +136,7 @@ bool IsRequestOk(const jrr::Request& req, const jrr::Response& resp) {
 }
 
 TEST_CASE("Rpc Client/Server communication test cases", "[DDS][RPC]") {
+    jrc::ChannelFactory::instance()->init(0);
     auto api_id = static_cast<int64_t>(random() % MAX_API_ID);
     auto static server = std::make_shared<LocoServer>();
     auto static client = std::make_shared<jrr::RpcClient>();
@@ -146,6 +184,7 @@ class MockServer : public jrr::RpcServer {
 };
 
 TEST_CASE("Rpc Client/Server communication test cases with timeout", "[DDS][RPC]") {
+    jrc::ChannelFactory::instance()->init(0);
     auto static server = std::make_unique<MockServer>();
     auto static client = std::make_unique<jrr::RpcClient>();
     server->init("TimeoutTest");
@@ -169,6 +208,7 @@ TEST_CASE("Rpc Client/Server communication test cases with timeout", "[DDS][RPC]
 }
 
 TEST_CASE("Rpc Client/Server communication aysnc test cases", "[DDS][RPC][ASYNC]") {
+    jrc::ChannelFactory::instance()->init(0);
     auto api_id = static_cast<int64_t>(random() % MAX_API_ID);
     auto static server = std::make_shared<LocoServer>();
     auto static client = std::make_shared<jrr::RpcClient>();
@@ -204,6 +244,7 @@ constexpr auto TEST_COUNT = 100;
 constexpr auto CAP_SIZE = 100;
 
 TEST_CASE("Publisher/Subscriber Dynamic pub&sub DDS communication using dynamic data test cases", "[DDS][DYNAMIC]") {
+    jrc::ChannelFactory::instance()->init(0);
     using namespace jsr::common::dds;
 
     auto member1_builder = DdsDynamicFactory::createStructType("Member1");
@@ -294,6 +335,7 @@ constexpr auto TOPIC_NAME = "rt/low_state";
 TEST_CASE("Publisher/Subscriber Dynamic pub& Static sub DDS communication using dynamic data test cases",
           "[DDS][DYNAMIC][IDL]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
 
     auto lowstate_type_builder =
         DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
@@ -447,6 +489,7 @@ TEST_CASE("Publisher/Subscriber Dynamic pub& Static sub DDS communication using 
 
 TEST_CASE("Idl Dynamic type union test", "[DDS][DYNAMIC][UNION]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
 
     union UnionVal {
         int8_t temperature;
@@ -514,6 +557,7 @@ TEST_CASE("Idl Dynamic type union test", "[DDS][DYNAMIC][UNION]") {
 
 TEST_CASE("Idl Dynamic type serialize test", "[DDS][DYNAMIC][JSON]") {
     using namespace jsr::common::dds;
+    jrc::ChannelFactory::instance()->init(0);
     auto lowstate_type_builder =
         DdsDynamicFactory::parseTypeFromIdlWithRos2("../../idl/LowState.idl", "jsr::msg::LowState", "../../idl/");
     auto lowstate_type = lowstate_type_builder->build();
