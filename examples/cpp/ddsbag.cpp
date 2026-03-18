@@ -2,138 +2,190 @@
 #include <chrono>
 #include <exception>
 #include <fstream>
+#include <shared_mutex>
 #include <thread>
 // JSRCOMM
-#include "jsrcomm/common/dds/dds_dynamic_factory.hpp"
+#include "jsrcomm/robot/channel/channel_blackboard.hpp"
 #include "jsrcomm/robot/channel/channel_publisher.hpp"
 #include "jsrcomm/robot/channel/channel_subscriber.hpp"
+// IDL
+#include "jsrcomm/idl/LowState.hpp"
 
 namespace jrc = jsr::robot::channel;
 namespace jcd = jsr::common::dds;
 
+enum class DdsBagMode { RECORD, PLAY };
+
 class DdsBag {
    public:
-    DdsBag() = default;
-
-    void setInput(const std::string& input_path) { input_path_ = input_path; }
-    void setOutput(const std::string& output_path) { output_path_ = output_path; }
-
-    void init() {
-        if (!output_path_.empty()) {
-            record_file_.open(output_path_, std::ios::out | std::ios::binary);
+    explicit DdsBag(DdsBagMode mode, const std::string& bag_name) : mode_(mode), bag_file_name_(bag_name) {}
+    ~DdsBag() {
+        std::unique_lock lock(mutex_);
+        if (out_.is_open()) {
+            out_.close();
         }
-        if (!input_path_.empty()) {
-            play_file_.open(input_path_, std::ios::in | std::ios::binary);
+        if (in_.is_open()) {
+            in_.close();
+        }
+        player_.clear();
+        play_callbacks_.clear();
+    }
+
+    template <typename T>
+    void registerTopic(const std::string& topic) {
+        if (mode_ == DdsBagMode::RECORD) {
+            // subscriber
+            bb_.registerTopic<T>(topic, [this, topic](const T* msg) {
+                auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                              std::chrono::system_clock::now().time_since_epoch())
+                              .count();
+                saveDdsData(topic, ns, *msg);
+            });
+        } else if (mode_ == DdsBagMode::PLAY) {
+            // publisher
+            if (player_.count(topic) != 0) {
+                throw std::runtime_error("Topic " + topic + " has been registered.");
+            }
+            auto pub = std::make_shared<jrc::ChannelPublisher<T>>(topic);
+            pub->initChannel();
+            player_[topic] = pub;
+            play_callbacks_[topic] = [this, topic, pub](const char* data, uint32_t size) {
+                eprosima::fastcdr::FastBuffer buffer(const_cast<char*>(data), size);
+                eprosima::fastcdr::Cdr deser(buffer);
+                T msg{};
+                deser.read_encapsulation();
+                deser.deserialize(msg);
+                pub->write(&msg);
+            };
+        } else {
+            throw std::runtime_error("Invalid mode.");
         }
     }
 
-    void subscribeTopic(const std::string& topic_name, const std::string& type_name, const std::string& idl_path,
-                        const std::string& idl_dir) {
-        current_topic_ = topic_name;
-        auto type_builder = jcd::DdsDynamicFactory::parseTypeFromIdlWithRos2(idl_path, type_name, idl_dir);
-        auto type = type_builder->build();
-        auto sub = std::make_shared<jrc::ChannelSubscriber<jcd::DdsDynamicData>>(
-            topic_name, type_builder, [this, type](const void* msg) { this->recordCallback(msg, type); });
-        sub->initChannel();
-        subscribers_.push_back(sub);
-    }
-
-    void playBag(const std::string& type_name, const std::string& idl_path, const std::string& idl_dir) {
-        auto type_builder = jcd::DdsDynamicFactory::parseTypeFromIdlWithRos2(idl_path, type_name, idl_dir);
-        auto type = type_builder->build();
-        if (!play_file_.is_open()) {
-            throw std::runtime_error("play file not open");
-            return;
+    void play() {
+        if (mode_ != DdsBagMode::PLAY) {
+            throw std::runtime_error("Invalid mode.");
         }
-        std::unordered_map<std::string, std::shared_ptr<jrc::ChannelPublisher<jcd::DdsDynamicData>>> publishers;
-        int64_t last_msg_timestamp = 0;
-        while (play_file_.peek() != EOF) {
-            uint32_t size = 0;
-            play_file_.read(static_cast<char*>(static_cast<void*>((&size))), sizeof(size));
-            if (play_file_.gcount() != sizeof(size)) {
+        if (!in_.is_open()) {
+            in_.open(bag_file_name_, std::ios::in | std::ios::binary);
+        }
+        if (!in_.is_open()) {
+            throw std::runtime_error("Can't open file " + bag_file_name_ + "for reading.");
+        }
+        while (true) {
+            if (in_.eof()) {
                 break;
             }
-            std::string serialized(size, ' ');
-            play_file_.read(serialized.data(), size);
-            auto json = nlohmann::json::parse(serialized);
-            std::string topic = json["topic"];
-            int64_t timestamp = 0;
-            timestamp = json["timestamp"];
-            json.erase("topic");
-            json.erase("timestamp");
-            if (last_msg_timestamp != 0) {
-                auto diff = timestamp - last_msg_timestamp;
-                if (diff > 0) {
-                    std::this_thread::sleep_for(std::chrono::nanoseconds(diff));
-                }
+            bool read_done = false;
+            uint32_t topic_len;
+            std::vector<char> topic_raw;
+            if (!in_.read(reinterpret_cast<char*>(&topic_len), sizeof(topic_len))) {
+                break;
             }
-            last_msg_timestamp = timestamp;
-
-            if (publishers.find(topic) == publishers.end()) {
-                auto pub = std::make_shared<jrc::ChannelPublisher<jcd::DdsDynamicData>>(topic, type_builder);
-                pub->initChannel();
-                publishers[topic] = pub;
+            topic_raw.resize(topic_len);
+            if (!in_.read(topic_raw.data(), topic_len)) {
+                break;
             }
+            auto topic = std::string(topic_raw.data(), topic_len);
 
-            auto data = jcd::DdsDynamicFactory::parseFromJson(json, type);
-            publishers[topic]->write(&data);
-        }
-    }
+            int64_t ns;
+            if (!in_.read(reinterpret_cast<char*>(&ns), sizeof(ns))) {
+                break;
+            }
+            static auto last_ns = ns;
 
-    void recordCallback(const void* msg, const jcd::TypeRef& type) {
-        if (!is_recording_) {
-            return;
-        }
-        if (!record_file_.is_open()) {
-            throw std::runtime_error("record file not open");
-            return;
-        }
-        auto data = *static_cast<const jcd::DdsDynamicData::_ref_type*>(msg);
-        auto json = jcd::DdsDynamicFactory::toJson(data);
-        json["timestamp"] = std::chrono::system_clock::now().time_since_epoch().count();
-        json["topic"] = current_topic_;
-        std::string serialized = json.dump();
-        uint32_t size = serialized.size();
-        record_file_.write(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
-        record_file_.write(serialized.data(), size);
-    }
-
-    void startRecording() { is_recording_ = true; }
-
-    void stopRecording() { is_recording_ = false; }
-
-    ~DdsBag() {
-        if (record_file_.is_open()) {
-            record_file_.close();
-        }
-        if (play_file_.is_open()) {
-            play_file_.close();
+            uint32_t length;
+            std::vector<char> data;
+            if (!in_.read(reinterpret_cast<char*>(&length), sizeof(length))) {
+                break;
+            }
+            data.resize(length);
+            if (!in_.read(data.data(), length)) {
+                break;
+            }
+            if (play_callbacks_.count(topic) != 0) {
+                play_callbacks_[topic](data.data(), length);
+            }
+            std::this_thread::sleep_for(std::chrono::nanoseconds(ns - last_ns));
+            last_ns = ns;
         }
     }
 
    private:
-    std::string output_path_;
-    std::string input_path_;
-    std::ofstream record_file_;
-    std::ifstream play_file_;
-    std::vector<std::shared_ptr<jrc::ChannelSubscriber<jcd::DdsDynamicData>>> subscribers_;
-    bool is_recording_ = false;
-    std::string current_topic_;
+    DdsBagMode mode_;
+    std::string bag_file_name_;
+    std::ofstream out_;
+    std::ifstream in_;
+
+    jrc::ChannelBlackboard bb_;
+    mutable std::shared_mutex mutex_;
+
+    std::unordered_map<std::string, std::shared_ptr<void>> player_;
+    std::unordered_map<std::string, std::function<void(const char*, uint32_t)>> play_callbacks_;
+
+    template <typename T>
+    void saveDdsData(const std::string& topic, int64_t ns, T data) {
+        eprosima::fastcdr::FastBuffer fastbuffer;
+        eprosima::fastcdr::Cdr ser(fastbuffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN);
+        if (!out_.is_open()) {
+            out_.open(bag_file_name_, std::ios::out | std::ios::binary | std::ios::app);
+        }
+        if (!out_.is_open()) {
+            throw std::runtime_error("Can't open file " + bag_file_name_ + "for writing.");
+        }
+
+        // 1. topic write
+        uint32_t topic_len = static_cast<uint32_t>(topic.size());
+        out_.write(reinterpret_cast<const char*>(&topic_len), sizeof(topic_len));
+        out_.write(topic.c_str(), topic_len);
+
+        // 2. time write
+        out_.write(reinterpret_cast<const char*>(&ns), sizeof(ns));
+
+        // 3. data write
+        ser.serialize_encapsulation();
+        ser.serialize(data);
+        const char* data_ptr = fastbuffer.getBuffer();
+        size_t data_size = ser.get_serialized_data_length();
+        uint32_t length = static_cast<uint32_t>(data_size);
+        out_.write(reinterpret_cast<const char*>(&length), sizeof(length));
+        out_.write(data_ptr, data_size);
+    }
 };
 
-int main() {
+int main(const int argc, const char* argv[]) {
+    if (argc < 3) {
+        fmt::print(
+            "Usage: {} <mode> <file path>\n"
+            "<mode>: play,record.\n"
+            "<file path>: input play bag name, save record bag name.\n",
+            argv[0]);
+        return 0;
+    }
+
+    constexpr auto TOPIC = "rt/low_state";
+    constexpr auto SLEEP_TIME = 10;
+
     jrc::ChannelFactory::instance()->init(0);
 
-    DdsBag dds_bag;
-    // dds_bag.setInput("xxx.bag");
-    dds_bag.setOutput("xxx.bag");
-    dds_bag.init();
-    // dds_bag.playBag("jsr::msg::LowState", "../../idl/LowState.idl", "../../idl");
+    DdsBagMode mode;
 
-    dds_bag.subscribeTopic("rt/low_state", "jsr::msg::LowState", "../../idl/LowState.idl", "../../idl");
-    dds_bag.startRecording();
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    dds_bag.stopRecording();
+    if (std::string(argv[1]) == "play") {
+        mode = DdsBagMode::PLAY;
+    } else if (std::string(argv[1]) == "record") {
+        mode = DdsBagMode::RECORD;
+    } else {
+        fmt::print("<mode> parma must be play or record");
+        return -1;
+    }
+
+    DdsBag dds_bag(mode, argv[2]);
+    dds_bag.registerTopic<jsr::msg::LowState>(TOPIC);
+    if (mode == DdsBagMode::PLAY) {
+        dds_bag.play();
+    } else {
+        std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
+    }
 
     return 0;
 }
