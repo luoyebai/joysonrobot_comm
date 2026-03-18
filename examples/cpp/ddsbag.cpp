@@ -9,6 +9,8 @@
 #include "jsrcomm/robot/channel/channel_publisher.hpp"
 #include "jsrcomm/robot/channel/channel_subscriber.hpp"
 // IDL
+#include "jsrcomm/idl/BmsState.hpp"
+#include "jsrcomm/idl/ImuState.hpp"
 #include "jsrcomm/idl/LowState.hpp"
 
 namespace jrc = jsr::robot::channel;
@@ -125,6 +127,7 @@ class DdsBag {
 
     template <typename T>
     void saveDdsData(const std::string& topic, int64_t ns, T data) {
+        std::unique_lock lock(mutex_);
         eprosima::fastcdr::FastBuffer fastbuffer;
         eprosima::fastcdr::Cdr ser(fastbuffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN);
         if (!out_.is_open()) {
@@ -163,7 +166,9 @@ int main(const int argc, const char* argv[]) {
         return 0;
     }
 
-    constexpr auto TOPIC = "rt/low_state";
+    constexpr auto TOPIC1 = "rt/low_state";
+    constexpr auto TOPIC2 = "rt/imu_state";
+    constexpr auto TOPIC3 = "rt/bms_state";
     constexpr auto SLEEP_TIME = 10;
 
     jrc::ChannelFactory::instance()->init(0);
@@ -180,12 +185,13 @@ int main(const int argc, const char* argv[]) {
     }
 
     DdsBag dds_bag(mode, argv[2]);
-    dds_bag.registerTopic<jsr::msg::LowState>(TOPIC);
+    dds_bag.registerTopic<jsr::msg::LowState>(TOPIC1);
+    dds_bag.registerTopic<jsr::msg::ImuState>(TOPIC2);
+    dds_bag.registerTopic<jsr::msg::BmsState>(TOPIC3);
     if (mode == DdsBagMode::PLAY) {
         dds_bag.play();
     } else {
         std::this_thread::sleep_for(std::chrono::seconds(SLEEP_TIME));
     }
-
     return 0;
 }
