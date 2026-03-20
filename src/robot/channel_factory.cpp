@@ -4,24 +4,21 @@
 namespace jsr::robot::channel {
 
 void ChannelFactory::init(int32_t domain_id, const std::string& network_interface) {
-    if (!initialized_) {
+    if (!initialized_.load(std::memory_order_acquire)) {
         dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
         dds_factory_model_->init(domain_id, network_interface);
-        initialized_ = true;
+        initialized_.store(true, std::memory_order_release);
         return;
     }
-    fmt::print(stderr, "ChannelFactory has already been initialized\n");
-    return;
 }
 
 void ChannelFactory::init(const nlohmann::json& config) {
-    if (!initialized_) {
+    if (!initialized_.load(std::memory_order_acquire)) {
         dds_factory_model_ = std::make_shared<jsr::common::dds::DdsFactoryModel>();
         dds_factory_model_->init(config);
+        initialized_.store(true, std::memory_order_release);
         return;
     }
-    fmt::print(stderr, "ChannelFactory has already been initialized\n");
-    return;
 }
 
 void ChannelFactory::closeWriter(const std::string& channel_name) {

@@ -39,7 +39,7 @@ class ChannelFactory {
 
     template <typename MSG, typename = jsr::common::dds::not_dynamic_data_t<MSG>>
     ChannelPtr<MSG> createSendChannel(const std::string& name) {
-        if (!initialized_) {
+        if (!initialized_.load(std::memory_order_acquire)) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::instance()->init before use!");
         }
@@ -50,7 +50,7 @@ class ChannelFactory {
 
     template <typename MSG, typename = jsr::common::dds::not_dynamic_data_t<MSG>>
     ChannelPtr<MSG> createRecvChannel(const std::string& name, std::function<void(const void*)> handler) {
-        if (!initialized_) {
+        if (!initialized_.load(std::memory_order_acquire)) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::instance()->init before use!");
         }
@@ -62,7 +62,7 @@ class ChannelFactory {
     // dynamic
     ChannelPtr<jsr::common::dds::DdsDynamicData> createSendChannel(
         const std::string& name, const jsr::common::dds::DdsDynamicTypeBuilder::_ref_type& type_builder) {
-        if (!initialized_) {
+        if (!initialized_.load(std::memory_order_acquire)) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::instance()->init before use!");
         }
@@ -74,7 +74,7 @@ class ChannelFactory {
     ChannelPtr<jsr::common::dds::DdsDynamicData> createRecvChannel(
         const std::string& name, const jsr::common::dds::DdsDynamicTypeBuilder::_ref_type& type_builder,
         const std::function<void(const void*)>& handler) {
-        if (!initialized_) {
+        if (!initialized_.load(std::memory_order_acquire)) {
             throw std::runtime_error(
                 "ChannelFactory not initialized! Must exec ChannelFactory::instance()->init before use!");
         }
@@ -84,7 +84,7 @@ class ChannelFactory {
     }
 
    private:
-    bool initialized_ = false;
+    std::atomic_bool initialized_{false};
     std::mutex mutex_;
     jsr::common::dds::DdsFactoryModelPtr dds_factory_model_{nullptr};
 };
