@@ -1,15 +1,22 @@
 #pragma once
 
 // STD
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 // GRPC
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
+#include <grpcpp/security/server_credentials.h>
+#include <grpcpp/support/async_stream.h>
+#include <grpcpp/support/async_unary_call.h>
+#include <grpcpp/support/server_callback.h>
+
 // FMT
 #include <fmt/format.h>
 
@@ -37,10 +44,17 @@ struct [[deprecated("GRPC poller MAX * CQS exceeds 2x CPU cores")]] GrpcUseCores
 template <>
 struct GrpcUseCoresTooMuchWarning<false> {};
 
+enum class GrpcSecurityMode { INSECURE, ALTS, MTLS, TLS };
+
 struct GrpcConfigOptions {
     int cqs = GRPC_BUILDER_DEFAULT_CQS;
     int pollers_min = GRPC_BUILDER_DEFAULT_POLLERS_MIN;
     int pollers_max = GRPC_BUILDER_DEFAULT_POLLERS_MAX;
+    GrpcSecurityMode security = GrpcSecurityMode::INSECURE;
+    // TLS
+    std::string server_key;
+    std::string server_cert;
+    std::string ca_cert;
 };
 
 using ::grpc::Channel;
@@ -49,6 +63,49 @@ using ::grpc::Server;
 using ::grpc::ServerBuilder;
 using ::grpc::Status;
 
+// --------------------
+// Credentials config |
+// --------------------
+inline std::string LoadFile(const std::string& path) {
+    std::ifstream file(path);
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+inline std::shared_ptr<::grpc::ServerCredentials> CreateServerCredentials(const GrpcConfigOptions& options) {
+    switch (options.security) {
+        case GrpcSecurityMode::TLS: {
+            ::grpc::SslServerCredentialsOptions ssl_opts;
+            ::grpc::SslServerCredentialsOptions::PemKeyCertPair keycert;
+            keycert.private_key = LoadFile(options.server_key);
+            keycert.cert_chain = LoadFile(options.server_cert);
+            ssl_opts.pem_key_cert_pairs.push_back(keycert);
+            return ::grpc::SslServerCredentials(ssl_opts);
+        }
+        case GrpcSecurityMode::MTLS: {
+            ::grpc::SslServerCredentialsOptions ssl_opts;
+            ::grpc::SslServerCredentialsOptions::PemKeyCertPair keycert;
+            keycert.private_key = LoadFile(options.server_key);
+            keycert.cert_chain = LoadFile(options.server_cert);
+            ssl_opts.pem_key_cert_pairs.push_back(keycert);
+            ssl_opts.pem_root_certs = LoadFile(options.ca_cert);
+            ssl_opts.client_certificate_request = GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
+            return ::grpc::SslServerCredentials(ssl_opts);
+        }
+        case GrpcSecurityMode::ALTS: {
+            ::grpc::experimental::AltsServerCredentialsOptions opts;
+            return ::grpc::experimental::AltsServerCredentials(opts);
+        }
+        case GrpcSecurityMode::INSECURE:
+        default:
+            return ::grpc::InsecureServerCredentials();
+    }
+}
+
+// -------------
+// Sync client |
+// -------------
 template <class T, class Request, class Reply>
 class ClientWrapper {
    public:
@@ -129,6 +186,9 @@ class ClientWrapper {
     std::unique_ptr<ClientContext> context_;
 };
 
+// ------------------------
+// Server builder options |
+// ------------------------
 auto GetServerBuilderDefaultOptions() {
     GrpcPollerEqualWarning<GRPC_BUILDER_DEFAULT_POLLERS_MIN == GRPC_BUILDER_DEFAULT_POLLERS_MAX> warn_equal;
     auto options = GrpcConfigOptions();
@@ -139,16 +199,18 @@ auto GetServerBuilderDefaultOptions() {
     return options;
 }
 
+// -------------
+// Sync Server |
+// -------------
 template <class T>
 void RunServer(uint16_t port, GrpcConfigOptions options = GetServerBuilderDefaultOptions()) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
-
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
     T service;
     // Listen on the given address without any authentication mechanism.
-    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, CreateServerCredentials(options));
     // Register "service" as the instance through which we'll communicate with
     // clients. In this case it corresponds to an *synchronous* service.
     builder.RegisterService(&service);
@@ -170,7 +232,7 @@ std::unique_ptr<Server> CreateServer(uint16_t port, T& service,
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
-    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, CreateServerCredentials(options));
     builder.RegisterService(&service);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
@@ -184,7 +246,7 @@ std::unique_ptr<Server> CreateServers(uint16_t port, GrpcConfigOptions options, 
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ::grpc::ServerBuilder builder;
-    builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, CreateServerCredentials(options));
     (builder.RegisterService(&services), ...);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
@@ -197,4 +259,13 @@ std::unique_ptr<Server> CreateServers(uint16_t port, Services&... services) {
     return std::move(CreateServers(port, GetServerBuilderDefaultOptions(), services...));
 }
 
-}  // namespace jsrcomm::grpc
+// ---------------------------------------
+// TODO(luoyebai): Async Server & Client |
+// ---------------------------------------
+
+// struct AsyncServer {
+//     std::unique_ptr<Server> server;
+//     std::vector<std::unique_ptr<::grpc::ServerCompletionQueue>> cqs;
+// };
+
+}  // namespace jsr::grpc
