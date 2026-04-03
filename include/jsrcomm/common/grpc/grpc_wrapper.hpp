@@ -57,12 +57,6 @@ struct GrpcConfigOptions {
     std::string ca_cert;
 };
 
-using ::grpc::Channel;
-using ::grpc::ClientContext;
-using ::grpc::Server;
-using ::grpc::ServerBuilder;
-using ::grpc::Status;
-
 // --------------------
 // Credentials config |
 // --------------------
@@ -108,14 +102,15 @@ inline std::shared_ptr<::grpc::ServerCredentials> CreateServerCredentials(const 
 // -------------
 template <class T, class Request, class Reply>
 class ClientWrapper {
+
    public:
-    explicit ClientWrapper(std::shared_ptr<Channel> channel) : stub_(T::NewStub(channel)) {}
+    explicit ClientWrapper(std::shared_ptr<::grpc::Channel> channel) : stub_(T::NewStub(channel)) {}
 
     template <typename Rpc>
     Reply rpcCall(Request request, Rpc rpc, std::function<void(Reply*)> bad_rpc_set = nullptr) {
         Reply reply;
-        ClientContext context;
-        Status status = std::invoke(rpc, stub_.get(), &context, request, &reply);
+        ::grpc::ClientContext context;
+        ::grpc::Status status = std::invoke(rpc, stub_.get(), &context, request, &reply);
         if (status.ok()) {
             return reply;
         }
@@ -128,7 +123,7 @@ class ClientWrapper {
     template <typename Stream>
     void streamCall(Stream s, std::atomic_bool& run_flag, std::function<Request(void)> get_req,
                     std::function<void(Reply*)> take_rep) {
-        context_ = std::make_unique<ClientContext>();
+        context_ = std::make_unique<::grpc::ClientContext>();
         auto stream = std::invoke(s, stub_.get(), context_.get());
         auto* stream_ptr = stream.get();
 
@@ -154,7 +149,7 @@ class ClientWrapper {
     template <typename Stream>
     void streamCall(Stream s, size_t count, std::function<Request(void)> get_req,
                     std::function<void(Reply*)> take_rep) {
-        ClientContext context;
+        ::grpc::ClientContext context;
         auto stream = std::invoke(s, stub_.get(), &context);
         auto* stream_ptr = stream.get();
 
@@ -183,7 +178,7 @@ class ClientWrapper {
 
    private:
     std::unique_ptr<typename T::Stub> stub_;
-    std::unique_ptr<ClientContext> context_;
+    std::unique_ptr<::grpc::ClientContext> context_;
 };
 
 // ------------------------
@@ -207,7 +202,7 @@ void RunServer(uint16_t port, GrpcConfigOptions options = GetServerBuilderDefaul
     std::string server_address = fmt::format("0.0.0.0:{}", port);
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-    ServerBuilder builder;
+    ::grpc::ServerBuilder builder;
     T service;
     // Listen on the given address without any authentication mechanism.
     builder.AddListeningPort(server_address, CreateServerCredentials(options));
@@ -218,7 +213,7 @@ void RunServer(uint16_t port, GrpcConfigOptions options = GetServerBuilderDefaul
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MIN_POLLERS, options.pollers_min);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::MAX_POLLERS, options.pollers_max);
     // Finally assemble the server.
-    std::unique_ptr<Server> server(builder.BuildAndStart());
+    std::unique_ptr<::grpc::Server> server(builder.BuildAndStart());
 
     // Wait for the server to shutdown. Note that some other thread must be
     // responsible for shutting down the server for this call to ever return.
@@ -226,12 +221,12 @@ void RunServer(uint16_t port, GrpcConfigOptions options = GetServerBuilderDefaul
 }
 
 template <class T>
-std::unique_ptr<Server> CreateServer(uint16_t port, T& service,
-                                     GrpcConfigOptions options = GetServerBuilderDefaultOptions()) {
+std::unique_ptr<::grpc::Server> CreateServer(uint16_t port, T& service,
+                                             GrpcConfigOptions options = GetServerBuilderDefaultOptions()) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-    ServerBuilder builder;
+    ::grpc::ServerBuilder builder;
     builder.AddListeningPort(server_address, CreateServerCredentials(options));
     builder.RegisterService(&service);
     builder.SetSyncServerOption(::grpc::ServerBuilder::SyncServerOption::NUM_CQS, options.cqs);
@@ -241,7 +236,7 @@ std::unique_ptr<Server> CreateServer(uint16_t port, T& service,
 }
 
 template <class... Services>
-std::unique_ptr<Server> CreateServers(uint16_t port, GrpcConfigOptions options, Services&... services) {
+std::unique_ptr<::grpc::Server> CreateServers(uint16_t port, GrpcConfigOptions options, Services&... services) {
     std::string server_address = fmt::format("0.0.0.0:{}", port);
     ::grpc::EnableDefaultHealthCheckService(true);
     ::grpc::reflection::InitProtoReflectionServerBuilderPlugin();
@@ -255,7 +250,7 @@ std::unique_ptr<Server> CreateServers(uint16_t port, GrpcConfigOptions options, 
 }
 
 template <class... Services>
-std::unique_ptr<Server> CreateServers(uint16_t port, Services&... services) {
+std::unique_ptr<::grpc::Server> CreateServers(uint16_t port, Services&... services) {
     return std::move(CreateServers(port, GetServerBuilderDefaultOptions(), services...));
 }
 
@@ -264,7 +259,7 @@ std::unique_ptr<Server> CreateServers(uint16_t port, Services&... services) {
 // ---------------------------------------
 
 // struct AsyncServer {
-//     std::unique_ptr<Server> server;
+//     std::unique_ptr<::grpc::Server> server;
 //     std::vector<std::unique_ptr<::grpc::ServerCompletionQueue>> cqs;
 // };
 

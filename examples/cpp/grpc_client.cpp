@@ -105,7 +105,9 @@ class GreeterClient {
 
 int main() {
     constexpr const char* ADDR = "localhost:50051";
-    auto channel = grpc::CreateChannel(ADDR, grpc::InsecureChannelCredentials());
+    grpc::SslCredentialsOptions ssl_opts;
+    ssl_opts.pem_root_certs = jsr::grpc::LoadFile("../certs/ca.crt");
+    auto channel = grpc::CreateChannel(ADDR, grpc::SslCredentials(ssl_opts));
     if (!channel->WaitForConnected(std::chrono::system_clock::now() + std::chrono::seconds(1))) {
         fmt::print(stderr, "[Client] Failed to connect to {}\n", ADDR);
         return -1;

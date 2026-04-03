@@ -51,8 +51,15 @@ int main() {
     } else {
         fmt::print("[Server] runtime: {} seconds\n", WAIT_TIME);
     }
+
+    jsr::grpc::GrpcConfigOptions option;
+    option.security = jsr::grpc::GrpcSecurityMode::TLS;
+    option.ca_cert = "../certs/ca.crt";
+    option.server_cert = "../certs/server.crt";
+    option.server_key = "../certs/server.key";
+
     auto service = GreeterServiceImpl();
-    auto server = jsr::grpc::CreateServer(PORT, service);
+    auto server = jsr::grpc::CreateServer(PORT, service, option);
     std::thread([&server, WAIT_TIME] {
         if (WAIT_TIME == 0) {
             getchar();
