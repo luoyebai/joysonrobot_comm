@@ -16,7 +16,6 @@
 #include <grpcpp/support/async_stream.h>
 #include <grpcpp/support/async_unary_call.h>
 #include <grpcpp/support/server_callback.h>
-
 // FMT
 #include <fmt/format.h>
 
