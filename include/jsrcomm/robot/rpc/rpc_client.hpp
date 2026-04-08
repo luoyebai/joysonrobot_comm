@@ -20,6 +20,7 @@ namespace jsr::robot::rpc {
 namespace jr = jsr::robot;
 
 constexpr bool JSR_DDS_RPC_PRINT_EXCEPTION = false;
+constexpr auto JSR_DDS_RPC_DEFAULT_TIMEOUT_MS = 1000;
 
 class RpcClient {
    public:
@@ -27,7 +28,7 @@ class RpcClient {
     ~RpcClient() = default;
 
     void init(const std::string& channel_name);
-    Response sendApiRequest(const Request& req, int64_t timeout_ms = 1000);
+    Response sendApiRequest(const Request& req, int64_t timeout_ms = JSR_DDS_RPC_DEFAULT_TIMEOUT_MS);
     void sendApiRequestAsync(const Request& req, std::function<void(Response)> cb);
 
     void stop();
@@ -42,9 +43,9 @@ class RpcClient {
     };
 
     std::mutex async_mutex_;
-    std::unordered_map<uint64_t, std::function<void(Response)>> async_cb_map_;
+    std::unordered_map<uint64_t, std::function<void(Response)>> async_cb_map_{};
     std::mutex mutex_;
-    std::unordered_map<uint64_t, std::shared_ptr<SyncEntry>> resp_map_;
+    std::unordered_map<uint64_t, std::shared_ptr<SyncEntry>> resp_map_{};
 
     std::shared_ptr<jr::channel::ChannelPublisher<jsr::msg::RpcReqMsg>> channel_publisher_;
     std::shared_ptr<jr::channel::ChannelSubscriber<jsr::msg::RpcRespMsg>> channel_subscriber_;

@@ -14,17 +14,17 @@ class Request {
     Request(const RequestHeader& header, const std::string& body) : header_(header), body_(body) {}
     Request(RequestHeader&& header, std::string&& body) : header_(header), body_(body) {}
 
-    void SetHeader(const RequestHeader& header) { header_ = header; }
-    void SetHeader(RequestHeader&& header) { header_ = header; }
+    void setHeader(const RequestHeader& header) { header_ = header; }
+    void setHeader(RequestHeader&& header) { header_ = header; }
 
-    RequestHeader GetHeader() const { return header_; }
+    RequestHeader getHeader() const { return header_; }
 
-    void SetBody(const std::string& body) { body_ = body; }
-    void SetBody(std::string&& body) { body_ = std::move(body); }
+    void setBody(const std::string& body) { body_ = body; }
+    void setBody(std::string&& body) { body_ = std::move(body); }
 
-    const std::string& GetBody() const { return body_; }
-    std::string& GetBody() { return body_; }
-    std::string&& MoveBody() { return std::move(body_); }
+    const std::string& getBody() const { return body_; }
+    std::string& getBody() { return body_; }
+    std::string&& moveBody() { return std::move(body_); }
 
    private:
     RequestHeader header_;

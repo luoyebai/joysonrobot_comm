@@ -76,11 +76,11 @@ class ChannelDataBucket {
 
    private:
     ChannelDataBucket() = default;
-    mutable std::shared_mutex mutex_;
-    mutable std::shared_mutex sub_mutex_;
-    std::unordered_map<std::string, T> storage_;
-    std::unordered_map<std::string, std::shared_ptr<void>> subscribers_;
-    std::unordered_map<std::string, double> timestamps_;
+    mutable std::shared_mutex mutex_{};
+    mutable std::shared_mutex sub_mutex_{};
+    std::unordered_map<std::string, T> storage_{};
+    std::unordered_map<std::string, std::shared_ptr<void>> subscribers_{};
+    std::unordered_map<std::string, double> timestamps_{};
 };
 
 class ChannelBlackboard {
@@ -94,7 +94,7 @@ class ChannelBlackboard {
      * @brief Get the timestamp of the steady_clock
      * @tparam data type of the topic
      * @param topic topic name
-     * 
+     *
      * @return timestamp of the topic
      */
     template <typename T>

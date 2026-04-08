@@ -41,8 +41,8 @@ Response RpcClient::sendApiRequest(const Request& req, int64_t timeout_ms) {
     // send
     Response resp;
     RpcReqMsg req_msg;
-    req_msg.header(req.GetHeader().toJson().dump());
-    req_msg.body(req.GetBody());
+    req_msg.header(req.getHeader().toJson().dump());
+    req_msg.body(req.getBody());
     req_msg.uuid(uuid);
     channel_publisher_->write(&req_msg);
 
@@ -55,14 +55,14 @@ Response RpcClient::sendApiRequest(const Request& req, int64_t timeout_ms) {
             resp = future.get();
             break;
         case std::future_status::timeout:
-            resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
+            resp.setHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
             break;
         case std::future_status::deferred:
-            resp.SetHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
+            resp.setHeader(ResponseHeader(RPC_STATUS_CODE_TIMEOUT));
             break;
     }
 
-    switch (resp.GetHeader().GetStatus()) {
+    switch (resp.getHeader().getStatus()) {
         case jr::rpc::RPC_STATUS_CODE_SUCCESS:
             break;
         case jr::rpc::RPC_STATUS_CODE_TIMEOUT:
@@ -120,8 +120,8 @@ void RpcClient::sendApiRequestAsync(const Request& req, std::function<void(Respo
     // send
     RpcReqMsg msg;
     msg.uuid(uuid);
-    msg.header(req.GetHeader().toJson().dump());
-    msg.body(req.GetBody());
+    msg.header(req.getHeader().toJson().dump());
+    msg.body(req.getBody());
     channel_publisher_->write(&msg);
 }
 
@@ -149,7 +149,7 @@ void RpcClient::ddsSubMsgHandler(const void* msg) {
         header = ResponseHeader(status);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Response header error:{}\n", e.what());
-        header.SetStatus(jr::rpc::RPC_STATUS_CODE_INVALID);
+        header.setStatus(jr::rpc::RPC_STATUS_CODE_INVALID);
     }
     body = resp_msg->body();
 

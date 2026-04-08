@@ -50,7 +50,7 @@ void RpcServer::ddsReqMsgHandler(const void* msg) {
         header = RequestHeader(api_id);
     } catch (const std::exception& e) {
         fmt::print(stderr, "Request header error: {}\n", e.what());
-        header.SetApiId(jr::rpc::RPC_STATUS_CODE_INVALID);
+        header.setApiId(jr::rpc::RPC_STATUS_CODE_INVALID);
     }
 
     body = req_msg->body();
@@ -59,8 +59,8 @@ void RpcServer::ddsReqMsgHandler(const void* msg) {
     // Like hardware, software, etc.
 
     Response resp;
-    if (handlers_.count(req.GetHeader().GetApiId())) {
-        resp = handlers_[req.GetHeader().GetApiId()](req);
+    if (handlers_.count(req.getHeader().getApiId())) {
+        resp = handlers_[req.getHeader().getApiId()](req);
     } else {
         resp = handleRequest(req);
     }
@@ -71,8 +71,8 @@ void RpcServer::ddsReqMsgHandler(const void* msg) {
 int64_t RpcServer::sendResponse(const uint64_t uuid, const Response& resp) {
     RpcRespMsg rpc_resp_msg;
     rpc_resp_msg.uuid(uuid);
-    rpc_resp_msg.header(resp.GetHeader().toJson().dump());
-    rpc_resp_msg.body(resp.GetBody());
+    rpc_resp_msg.header(resp.getHeader().toJson().dump());
+    rpc_resp_msg.body(resp.getBody());
     return channel_publisher_->write(&rpc_resp_msg);
 }
 

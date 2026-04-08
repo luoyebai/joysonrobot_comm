@@ -14,9 +14,9 @@ class RequestHeader {
     RequestHeader() = default;
     explicit RequestHeader(int64_t api_id) : api_id_(api_id) {}
 
-    void SetApiId(int64_t api_id) { api_id_ = api_id; }
+    void setApiId(int64_t api_id) { api_id_ = api_id; }
 
-    int64_t GetApiId() const { return api_id_; }
+    int64_t getApiId() const { return api_id_; }
 
    public:
     void fromJson(nlohmann::json& json) { api_id_ = json[RPC_HEADER_JSON_APIID_KEY]; }

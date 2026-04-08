@@ -124,15 +124,15 @@ class LocoServer : public jrr::RpcServer {
     ~LocoServer() = default;
     jrr::Response handleRequest(jrr::Request& request) override {
         auto response = jrr::Response();
-        response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
-        response.SetBody(request.MoveBody());
+        response.setHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
+        response.setBody(request.moveBody());
         return response;
     }
 };
 
 bool IsRequestOk(const jrr::Request& req, const jrr::Response& resp) {
     // No error handling in server
-    return (resp.GetHeader().GetStatus() == jrr::RPC_STATUS_CODE_SUCCESS && req.GetBody() == resp.GetBody());
+    return (resp.getHeader().getStatus() == jrr::RPC_STATUS_CODE_SUCCESS && req.getBody() == resp.getBody());
 }
 
 TEST_CASE("Rpc Client/Server communication test cases", "[DDS][RPC]") {
@@ -162,13 +162,13 @@ class MockServer : public jrr::RpcServer {
         this->registerApi(0,
                           [this](const jrr::Request& req) {
                               auto response = jrr::Response();
-                              response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
+                              response.setHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
                               stopped.test_and_set();
                               return response;
                           })
             ->registerApi(1, [this](const jrr::Request& req) {
                 auto response = jrr::Response();
-                response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SERVER_REFUSED));
+                response.setHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SERVER_REFUSED));
                 return response;
             });
     }
@@ -176,9 +176,9 @@ class MockServer : public jrr::RpcServer {
 
    private:
     jrr::Response handleRequest(jrr::Request& request) override {
-        auto api_id = request.GetHeader().GetApiId();
+        auto api_id = request.getHeader().getApiId();
         auto response = jrr::Response();
-        response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_BAD_REQUEST));
+        response.setHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_BAD_REQUEST));
         return response;
     }
 };
@@ -191,18 +191,18 @@ TEST_CASE("Rpc Client/Server communication test cases with timeout", "[DDS][RPC]
     client->init("TimeoutTest");
     int64_t status = -1;
     auto req = jrr::Request(jrr::RequestHeader(0), "");
-    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).getHeader().getStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_SUCCESS);
     req = jrr::Request(jrr::RequestHeader(1), "");
-    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).getHeader().getStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_SERVER_REFUSED);
     req = jrr::Request(jrr::RequestHeader(2), "");
-    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).getHeader().getStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_BAD_REQUEST);
     if (server->stopped._M_i) {
         server->stop();
     }
-    status = client->sendApiRequest(req).GetHeader().GetStatus();
+    status = client->sendApiRequest(req).getHeader().getStatus();
     REQUIRE(status == jrr::RPC_STATUS_CODE_TIMEOUT);
     client->stop();
 }

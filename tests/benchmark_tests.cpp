@@ -93,15 +93,15 @@ class LocoServer : public jrr::RpcServer {
     ~LocoServer() = default;
     jrr::Response handleRequest(jrr::Request& request) override {
         auto response = jrr::Response();
-        response.SetHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
-        response.SetBody(request.MoveBody());
+        response.setHeader(jrr::ResponseHeader(jrr::RPC_STATUS_CODE_SUCCESS));
+        response.setBody(request.moveBody());
         return response;
     }
 };
 
 bool IsRequestOk(const jrr::Request& req, const jrr::Response& resp) {
     // No error handling in server
-    return (resp.GetHeader().GetStatus() == jrr::RPC_STATUS_CODE_SUCCESS && req.GetBody() == resp.GetBody());
+    return (resp.getHeader().getStatus() == jrr::RPC_STATUS_CODE_SUCCESS && req.getBody() == resp.getBody());
 }
 
 TEST_CASE("Rpc Client/Server communication benchmark case", "[DDS][RPC]") {

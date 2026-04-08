@@ -24,15 +24,15 @@ int main() {
     constexpr size_t API_SIZE = 16;
     for (size_t i = 0; i < REQUEST_COUNT; ++i) {
         auto api = random() % API_SIZE + API_BASE_SIZE;
-        header.SetApiId(api);
-        req.SetHeader(header);
-        req.SetBody("This is a message");
+        header.setApiId(api);
+        req.setHeader(header);
+        req.setBody("This is a message");
 
         // sync send and async send
         auto resp = client->sendApiRequest(req);
-        fmt::print("Response: {}\n", resp.GetBody());
+        fmt::print("Response: {}\n", resp.getBody());
         client->sendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {
-            fmt::print("Async Response: {}\n", resp.GetBody());
+            fmt::print("Async Response: {}\n", resp.getBody());
             return;
         });
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
@@ -49,8 +49,8 @@ int main() {
     }
     // 1999: Exit
     auto api = API_BASE_SIZE - 1;
-    header.SetApiId(api);
-    req.SetHeader(header);
-    req.SetBody("Exit");
+    header.setApiId(api);
+    req.setHeader(header);
+    req.setBody("Exit");
     client->sendApiRequestAsync(req, [](const jsr::robot::rpc::Response& resp) {});
 }

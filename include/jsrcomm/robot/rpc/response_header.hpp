@@ -14,9 +14,9 @@ class ResponseHeader {
     ResponseHeader() = default;
     explicit ResponseHeader(const int32_t status) : status_(status) {}
 
-    void SetStatus(const int32_t status) { status_ = status; }
+    void setStatus(const int32_t status) { status_ = status; }
 
-    int32_t GetStatus() const { return status_; }
+    int32_t getStatus() const { return status_; }
 
    public:
     void fromJson(nlohmann::json& json) { status_ = json[RPC_HEADER_JSON_STATUS_KEY]; }
