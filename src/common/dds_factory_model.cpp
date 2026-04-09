@@ -39,14 +39,12 @@ void DdsFactoryModel::init(int32_t domain_id, const std::string& network_interfa
 
     if (!participant_) {
         throw std::runtime_error("Failed to create DomainParticipant.");
-        return;
     }
     // init publisher
     DdsPublisher* raw_publisher = participant_->create_publisher(publisher_qos_, nullptr);
     publisher_ = DdsPublisherPtr(raw_publisher, [](DdsPublisher*) {});
     if (!publisher_) {
         throw std::runtime_error("Failed to create Publisher.");
-        return;
     }
 
     // init subscriber
@@ -55,14 +53,12 @@ void DdsFactoryModel::init(int32_t domain_id, const std::string& network_interfa
 
     if (!subscriber_) {
         throw std::runtime_error("Failed to create Subscriber.");
-        return;
     }
 }
 
 void DdsFactoryModel::init(const nlohmann::json& config) {
     if (config.empty()) {
         throw std::runtime_error("DdsFactoryModel config is empty");
-        return;
     }
     int32_t domain_id = config.value("domain_id", 0);
     std::string network_interface = config.value("network_interface", "");
