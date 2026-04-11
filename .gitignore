@@ -19,3 +19,4 @@ build/
 idl/genfiles/
 .vscode/
 .cache/
+include/*/idl/*/
