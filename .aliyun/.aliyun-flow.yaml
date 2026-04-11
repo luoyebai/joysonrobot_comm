@@ -1,0 +1,33 @@
+name: "AI-Code-Review-Pipeline"
+
+# 触发条件：当 feat/* 或 main 分支有代码推送，或发起合并请求时
+on:
+  merge_request:
+    types: [opened, updated]
+  push:
+    branches:
+      - main
+      - "feat/*"
+
+jobs:
+  ai_review_job:
+    name: "AI 智能评审"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v3
+
+      # 阿里云 Flow 官方 AI 评审插件
+      - name: "Aliyun AI Code Review"
+        uses: aliyun/flow-ai-review@v1.0
+        with:
+          # 评审范围：增量评审
+          review_type: "incremental"
+          # 针对 C++ 开发者的自定义 Prompt 增强
+          custom_prompt: |
+            你是一名精通 C++20 的资深架构师。
+            请重点检查：
+            1. 变量命名是否符合 jik::common 规范，目录下有.clang-format 和 .clang-tidy 文件。
+            2. 代码是否存在潜在的内存泄漏、死锁、竞态条件等问题。
+          # 敏感信息过滤
+          exclude_path: "['docs/**', 'tests/**', 'third_party/**']"

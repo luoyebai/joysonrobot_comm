@@ -1,0 +1,10 @@
+#include "Vector3.idl"
+
+module geometry_msgs
+{
+  struct Twist
+  {
+    Vector3 linear;
+    Vector3 angular;
+  };
+};

@@ -20,7 +20,7 @@ option(BUILD_TEST "Build Test" ON)
 # Compiling together with Examples requires modifying cmake to add_build_type
 option(BUILD_EXAMPLE "Build Example" OFF)
 option(ENABLE_DDS "Enable dds" ON)
-option(ENABLE_GRPC "Enable grpc" ON)
+option(ENABLE_GRPC "Enable grpc" OFF)
 option(ENABLE_DOXYGEN "Enable Doxygen" OFF)
 # Debug option
 option(SANITIZERS_ADDRESS_ON "Enable AddressSanitizer" OFF)

@@ -1,0 +1,9 @@
+#include "Vector3.idl"
+#include "Quaternion.idl"
+
+module tf2_msgs {
+    struct Transform {
+        geometry_msgs::Vector3 translation;
+        geometry_msgs::Quaternion rotation;
+    };
+};

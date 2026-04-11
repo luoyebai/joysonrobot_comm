@@ -1,0 +1,22 @@
+#include "Header.idl"
+
+module sensor_msgs
+{
+  struct LaserScan
+  {
+    std_msgs::Header header;
+
+    float angle_min;
+    float angle_max;
+    float angle_increment;
+
+    float time_increment;
+    float scan_time;
+
+    float range_min;
+    float range_max;
+
+    sequence<float> ranges;
+    sequence<float> intensities;
+  };
+};

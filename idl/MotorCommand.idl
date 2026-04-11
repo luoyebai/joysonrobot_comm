@@ -1,0 +1,12 @@
+module robot_msgs
+{
+  struct MotorCommand
+  {
+    uint32 id;
+    double position;
+    double velocity;
+    double torque;
+    double kp;
+    double kd;
+  };
+};

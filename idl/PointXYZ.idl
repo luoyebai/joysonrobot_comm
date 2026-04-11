@@ -1,0 +1,18 @@
+#include "Header.idl"
+
+module sensor_msgs
+{
+  struct PointXYZ
+  {
+    float x;
+    float y;
+    float z;
+  };
+
+  struct PointCloud
+  {
+    std_msgs::Header header;
+
+    sequence<PointXYZ> points;
+  };
+};

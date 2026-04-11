@@ -1,0 +1,9 @@
+#include "PoseStamped.idl"
+
+module nav_msgs {
+
+struct Path {
+    sequence<geometry_msgs::PoseStamped> poses;
+};
+
+};

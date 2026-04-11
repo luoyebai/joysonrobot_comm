@@ -1,0 +1,8 @@
+module sensor_msgs {
+  struct CameraStatus {
+    boolean connected;
+    float fps;
+    float exposure;
+    float gain;
+  };
+};

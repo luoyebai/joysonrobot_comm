@@ -1,0 +1,6 @@
+module sensor_msgs {
+    struct Joy {
+        sequence<float> axes;
+        sequence<long> buttons;
+    };
+};

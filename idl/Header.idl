@@ -1,0 +1,15 @@
+#ifndef _STD_MSGS_HEADER_IDL_
+#define _STD_MSGS_HEADER_IDL_
+
+module std_msgs
+{
+  struct Header
+  {
+    uint32 seq;
+    uint64 stamp_sec;
+    uint32 stamp_nanosec;
+    string frame_id;
+  };
+};
+
+#endif // _STD_MSGS_HEADER_IDL_

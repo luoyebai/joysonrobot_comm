@@ -1,0 +1,13 @@
+#include "Header.idl"
+
+module sensor_msgs
+{
+  struct CompressedImage
+  {
+    std_msgs::Header header;
+
+    string format;
+
+    sequence<octet> data;
+  };
+};

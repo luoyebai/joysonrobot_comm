@@ -1,0 +1,19 @@
+#include "Header.idl"
+#include "Vector3.idl"
+#include "Quaternion.idl"
+
+module geometry_msgs
+{
+  struct Pose
+  {
+    Vector3 position;
+    Quaternion orientation;
+  };
+
+  struct PoseStamped
+  {
+    std_msgs::Header header;
+    Pose data;
+  };
+
+};

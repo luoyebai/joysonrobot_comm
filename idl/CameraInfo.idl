@@ -1,0 +1,16 @@
+#include "Header.idl"
+
+module sensor_msgs
+{
+  struct CameraInfo
+  {
+    std_msgs::Header header;
+    uint32 height;
+    uint32 width;
+    string distortion_model;
+    sequence<double> D;
+    double K[9];
+    double R[9];
+    double P[12];
+  };
+};

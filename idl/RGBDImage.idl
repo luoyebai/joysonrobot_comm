@@ -1,0 +1,13 @@
+#include "Image.idl"
+#include "CameraInfo.idl"
+
+module sensor_msgs
+{
+  struct RGBDImage
+  {
+    std_msgs::Header header;
+    Image rgb;
+    Image depth;
+    CameraInfo camera_info;
+  };
+};
