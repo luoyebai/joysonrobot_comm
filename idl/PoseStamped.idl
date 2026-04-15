@@ -1,19 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from geometry_msgs/msg/PoseStamped.msg
+// generated code does not contain a copyright notice
+#ifndef POSESTAMPED_IDL_
+#define POSESTAMPED_IDL_
+
+#include "Pose.idl"
 #include "Header.idl"
-#include "Vector3.idl"
-#include "Quaternion.idl"
 
-module geometry_msgs
-{
-  struct Pose
-  {
-    Vector3 position;
-    Quaternion orientation;
+module geometry_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      "A Pose with reference coordinate frame and timestamp")
+    struct PoseStamped {
+      std_msgs::msg::Header header_;
+
+      geometry_msgs::msg::Pose pose_;
+    };
   };
-
-  struct PoseStamped
-  {
-    std_msgs::Header header;
-    Pose data;
-  };
-
 };
+
+#endif  // POSESTAMPED_IDL_

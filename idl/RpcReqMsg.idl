@@ -1,3 +1,5 @@
+#ifndef RPCREQMSG_IDL_
+#define RPCREQMSG_IDL_
 module jsr {
   module msg {
     /**
@@ -11,3 +13,5 @@ module jsr {
 
   };
 };
+
+#endif  // RPCREQMSG_IDL_

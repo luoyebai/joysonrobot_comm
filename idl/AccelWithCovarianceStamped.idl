@@ -1,0 +1,21 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from geometry_msgs/msg/AccelWithCovarianceStamped.msg
+// generated code does not contain a copyright notice
+#ifndef ACCELWITHCOVARIANCESTAMPED_IDL_
+#define ACCELWITHCOVARIANCESTAMPED_IDL_
+
+#include "AccelWithCovariance.idl"
+#include "Header.idl"
+
+module geometry_msgs {
+  module msg {
+
+    struct AccelWithCovarianceStamped {
+      std_msgs::msg::Header header_;
+
+      geometry_msgs::msg::AccelWithCovariance accel_val;
+    };
+  };
+};
+
+#endif  // ACCELWITHCOVARIANCESTAMPED_IDL_

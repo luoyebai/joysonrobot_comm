@@ -1,0 +1,18 @@
+#ifndef JOINTTRAJECTORYPOINT_IDL_
+#define JOINTTRAJECTORYPOINT_IDL_
+
+#include "Duration.idl"
+
+module trajectory_msgs {
+  module msg {
+    struct JointTrajectoryPoint {
+      sequence<double> positions;
+      sequence<double> velocities;
+      sequence<double> accelerations;
+      sequence<double> effort;
+      builtin_interfaces::msg::Duration time_from_start;
+    };
+  };
+};
+
+#endif  // JOINTTRAJECTORYPOINT_IDL_

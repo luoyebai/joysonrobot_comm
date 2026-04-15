@@ -1,3 +1,5 @@
+#ifndef LOWSTATE_IDL_
+#define LOWSTATE_IDL_
 #include "BmsState.idl"
 #include "ImuState.idl"
 #include "MotorState.idl"
@@ -12,3 +14,5 @@ module jsr {
     };
   };
 };
+
+#endif  // LOWSTATE_IDL_

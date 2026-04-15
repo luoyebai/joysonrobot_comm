@@ -1,15 +1,18 @@
-#ifndef _STD_MSGS_HEADER_IDL_
-#define _STD_MSGS_HEADER_IDL_
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from std_msgs/msg/Header.msg
+// generated code does not contain a copyright notice
+#ifndef HEADER_IDL_
+#define HEADER_IDL_
 
-module std_msgs
-{
-  struct Header
-  {
-    uint32 seq;
-    uint64 stamp_sec;
-    uint32 stamp_nanosec;
-    string frame_id;
+#include "Time.idl"
+
+module std_msgs {
+  module msg {
+    struct Header {
+      builtin_interfaces::msg::Time stamp;
+      string frame_id;
+    };
   };
 };
 
-#endif // _STD_MSGS_HEADER_IDL_
+#endif  // HEADER_IDL_

@@ -1,0 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from diagnostic_msgs/msg/KeyValue.msg
+// generated code does not contain a copyright notice
+#ifndef KEYVALUE_IDL_
+#define KEYVALUE_IDL_
+
+
+module diagnostic_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      "What to label this value when viewing.")
+    struct KeyValue {
+      string key;
+
+      @verbatim (language="comment", text=
+        "A value to track over time.")
+      string value;
+    };
+  };
+};
+
+#endif  // KEYVALUE_IDL_

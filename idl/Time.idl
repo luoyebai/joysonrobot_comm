@@ -1,0 +1,13 @@
+#ifndef TIME_IDL_
+#define TIME_IDL_
+
+module builtin_interfaces {
+  module msg {
+    struct Time {
+      int32 sec;
+      uint32 nanosec;
+    };
+  };
+};
+
+#endif  // TIME_IDL_

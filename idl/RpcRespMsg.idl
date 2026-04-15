@@ -1,4 +1,6 @@
 // RpcRespMsg.idl
+#ifndef RPCRESPMSG_IDL_
+#define RPCRESPMSG_IDL_
 module jsr {
   module msg {
 
@@ -10,3 +12,5 @@ module jsr {
 
   };
 };
+
+#endif  // RPCRESPMSG_IDL_

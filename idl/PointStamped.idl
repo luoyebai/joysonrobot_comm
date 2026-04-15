@@ -1,0 +1,22 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from geometry_msgs/msg/PointStamped.msg
+// generated code does not contain a copyright notice
+#ifndef POINTSTAMPED_IDL_
+#define POINTSTAMPED_IDL_
+
+#include "Point.idl"
+#include "Header.idl"
+
+module geometry_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      "This represents a Point with reference coordinate frame and timestamp")
+    struct PointStamped {
+      std_msgs::msg::Header header_;
+
+      geometry_msgs::msg::Point point_;
+    };
+  };
+};
+
+#endif  // POINTSTAMPED_IDL_

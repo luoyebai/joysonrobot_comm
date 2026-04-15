@@ -1,3 +1,5 @@
+#ifndef TEST_IDL_
+#define TEST_IDL_
 module test {
 
     enum TestEnum {
@@ -45,3 +47,4 @@ module test {
     };
 
 };
+#endif  // TEST_IDL_

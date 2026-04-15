@@ -1,3 +1,5 @@
+#ifndef CAMERASTATUS_IDL_
+#define CAMERASTATUS_IDL_
 module sensor_msgs {
   struct CameraStatus {
     boolean connected;
@@ -6,3 +8,5 @@ module sensor_msgs {
     float gain;
   };
 };
+
+#endif  // CAMERASTATUS_IDL_

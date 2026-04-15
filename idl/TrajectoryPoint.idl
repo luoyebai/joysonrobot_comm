@@ -1,0 +1,41 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from nav_msgs/msg/TrajectoryPoint.msg
+// generated code does not contain a copyright notice
+#ifndef TRAJECTORYPOINT_IDL_
+#define TRAJECTORYPOINT_IDL_
+
+#include "Accel.idl"
+#include "Pose.idl"
+#include "Twist.idl"
+#include "Wrench.idl"
+#include "Header.idl"
+
+module nav_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      "Trajectory point state")
+    struct TrajectoryPoint {
+      @verbatim (language="comment", text=
+        "Absolute time and frame of reference of the point along a trajectory")
+      std_msgs::msg::Header header_;
+
+      @verbatim (language="comment", text=
+        "Pose of the trajectory sample.")
+      geometry_msgs::msg::Pose pose_;
+
+      @verbatim (language="comment", text=
+        "Velocity of the trajectory sample.")
+      geometry_msgs::msg::Twist velocity;
+
+      @verbatim (language="comment", text=
+        "Acceleration of the trajectory (optional, linear.x component is NaN if not set).")
+      geometry_msgs::msg::Accel acceleration;
+
+      @verbatim (language="comment", text=
+        "Force/Torque to apply at trajectory sample (optional, force.x component is NaN if not set).")
+      geometry_msgs::msg::Wrench effort;
+    };
+  };
+};
+
+#endif  // TRAJECTORYPOINT_IDL_

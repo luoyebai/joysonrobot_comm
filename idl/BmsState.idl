@@ -1,3 +1,5 @@
+#ifndef BMSSTATE_IDL_
+#define BMSSTATE_IDL_
 module jsr {
   module msg {
     /**
@@ -14,3 +16,4 @@ module jsr {
 
   };
 };
+#endif  // BMSSTATE_IDL_

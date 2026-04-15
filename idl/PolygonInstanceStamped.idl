@@ -1,0 +1,23 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from geometry_msgs/msg/PolygonInstanceStamped.msg
+// generated code does not contain a copyright notice
+#ifndef POLYGONINSTANCESTAMPED_IDL_
+#define POLYGONINSTANCESTAMPED_IDL_
+
+#include "PolygonInstance.idl"
+#include "Header.idl"
+
+module geometry_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      "This represents a Polygon with reference coordinate frame and timestamp" "\n"
+      "It includes a unique identification field for disambiguating multiple instances")
+    struct PolygonInstanceStamped {
+      std_msgs::msg::Header header_;
+
+      geometry_msgs::msg::PolygonInstance polygon_val;
+    };
+  };
+};
+
+#endif  // POLYGONINSTANCESTAMPED_IDL_
